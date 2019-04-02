@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="chess_style.css">
+        <script src="static\jquery\jquery-3.3.1.min.js"></script>
+    </head>
+    <body>
+        <div class="grid">
+            <div class="column left">
+                <button id="start">Начать</buttom>
+            </div>
+            <div class="column center">
+            <div class="geme-field">
+                <div class="chess-notif">
+                    <div class="chess-notif-cell-hor"></div>
+                    <div class="chess-notif-cell-hor"></div>
+                    <div class="chess-notif-cell-hor"></div>
+                    <div class="chess-notif-cell-hor"></div>
+                    <div class="chess-notif-cell-hor"></div>
+                    <div class="chess-notif-cell-hor"></div>
+                    <div class="chess-notif-cell-hor"></div>
+                    <div class="chess-notif-cell-hor"></div>
+                </div>
+                <div class="chess-notif-vert">
+                    <div class="chess-notif-cell-vert"></div>
+                    <div class="chess-notif-cell-vert"></div>
+                    <div class="chess-notif-cell-vert"></div>
+                    <div class="chess-notif-cell-vert"></div>
+                    <div class="chess-notif-cell-vert"></div>
+                    <div class="chess-notif-cell-vert"></div>
+                    <div class="chess-notif-cell-vert"></div>
+                    <div class="chess-notif-cell-vert"></div>
+                </div>
+                <div class="chess-place">
+                    <div class="chess-row">
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure rook-black"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure horse-black"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure elephant-black"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure queen-black"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure king-black"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure elephant-black"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure horse-black"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure rook-black"></div>
+                        </div>
+                    </div>
+                    <div class="chess-row">
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure pawn-black"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure pawn-black"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure pawn-black"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure pawn-black"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure pawn-black"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure pawn-black"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure pawn-black"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure pawn-black"></div>
+                        </div>
+                    </div>
+                    <div class="chess-row">
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                    </div>
+                    <div class="chess-row">
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                    </div>
+                    <div class="chess-row">
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                    </div>
+                    <div class="chess-row">
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                        </div>
+                    </div>
+                    <div class="chess-row">
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure pawn-white"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure pawn-white"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure pawn-white"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure pawn-white"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure pawn-white"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure pawn-white"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure pawn-white"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure pawn-white"></div>
+                        </div>
+                    </div>
+                    <div class="chess-row">
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure rook-white"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure horse-white"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure elephant-white"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure queen-white"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure king-white"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure elephant-white"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure horse-white"></div>
+                        </div>
+                        <div class="chess-cell">
+                            <div class="aim"></div>
+                            <div class="figure rook-white"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chess-notif-vert">
+                    <div class="chess-notif-cell-vert"></div>
+                    <div class="chess-notif-cell-vert"></div>
+                    <div class="chess-notif-cell-vert"></div>
+                    <div class="chess-notif-cell-vert"></div>
+                    <div class="chess-notif-cell-vert"></div>
+                    <div class="chess-notif-cell-vert"></div>
+                    <div class="chess-notif-cell-vert"></div>
+                    <div class="chess-notif-cell-vert"></div>
+                </div>
+                <div class="chess-notif">
+                    <div class="chess-notif-cell-hor"></div>
+                    <div class="chess-notif-cell-hor"></div>
+                    <div class="chess-notif-cell-hor"></div>
+                    <div class="chess-notif-cell-hor"></div>
+                    <div class="chess-notif-cell-hor"></div>
+                    <div class="chess-notif-cell-hor"></div>
+                    <div class="chess-notif-cell-hor"></div>
+                    <div class="chess-notif-cell-hor"></div>
+                </div>
+                </div>
+            </div>
+            <div class="column right">
+        </div>
+        <script src=".\static\scripts\gemplay_logics.js"></script>
+    </body>
+</html>

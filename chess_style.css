@@ -1,0 +1,177 @@
+html, body {
+    height: 100%;
+    margin: 0px;
+}
+
+/* Base grid for page*/
+.grid {
+    box-sizing: border-box;
+    display: table;
+    height: 100%;
+    width: 100%;
+}
+
+    .column {
+        display: table-cell;
+        min-height: 100%;
+        width: 100%;
+        text-align: center;
+    }
+
+    .center {
+        width: 60%;
+        background-color: #e2e2e2;
+        vertical-align: middle;
+    }
+
+    .left, .right {
+        width: 20%;
+    }        
+
+.geme-field {
+    font-size: 0px;
+    width: 600px;
+    height: 600px;
+    display: inline-block;
+}
+
+.chess-notif {
+    width: 600px;
+    height: 20px;
+    background-color: #afaf6a;
+    display: inline-block;
+}
+
+.chess-notif-vert {
+    width: 20px;
+    height: 560px;
+    background-color: #afaf6a;
+    display: inline-block;
+}
+
+    .chess-notif-cell-vert {
+        display: inline-block;
+        width: 20px;
+        height: 68px;
+        border-top: 1px solid #c8cabd;
+        border-bottom: 1px solid #c8cabd;
+    }
+
+    .chess-notif-cell-hor {
+        display: inline-block;
+        width: 68px;
+        height: 20px;
+        border-left: 1px solid #c8cabd;
+        border-right: 1px solid #c8cabd;
+    }
+
+.chess-place {
+    display: inline-block;
+    width: 560px;
+    height: 560px;
+    background-color: red;
+    padding: 0px;
+}
+
+    .chess-row {
+        width: 560px;
+        height: 70px;
+        margin: 0px;
+    }
+
+    .chess-cell {
+        display: inline-block;
+        width: 68px;
+        height: 68px;
+        background-color: #dcdcc5;
+        border: 1px solid #c8cabd;       /*#84504e*/
+    }
+
+        /*Pait cell*/
+        .chess-row:nth-child(2n) .chess-cell:nth-of-type(2n+1),
+        .chess-row:nth-child(2n+1) .chess-cell:nth-of-type(2n){
+            background-color: #84844e;
+        }
+
+        .chess-cell:hover {
+            background-color: #c3c368;
+        }
+
+        .chess-row:nth-child(2n) .chess-cell:nth-of-type(2n+1):hover,
+        .chess-row:nth-child(2n+1) .chess-cell:nth-of-type(2n):hover {
+            background-color: #c3c368;
+        }
+
+        .aim {
+            margin: 5px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: none;
+        }
+
+            .available {
+                background-color: #27bd15;
+                display: block;
+            }
+
+            .not-available {
+                background-color: #f50000;
+                display: block;
+            }
+
+.figure {
+    background-image: url("./static/images/1-e4p9BrCzJUdlqx7KVGW9aA.png");
+    background-repeat: no-repeat;
+    width: 68px;
+    height: 68px;
+}
+
+    .pawn-white {
+        background-position: -6px -11px;
+    }
+
+    .pawn-black {
+        background-position: -268px -11px;
+    }
+
+    .rook-white {
+        background-position: -7px -249px;
+    }
+
+    .rook-black {
+        background-position: -261px -249px;
+    }
+
+    .horse-white {
+        background-position: -6px -88px;
+    }
+
+    .horse-black {
+        background-position: -262px -88px;
+    }
+
+    .elephant-white {
+        background-position: -7px -166px;
+    }
+
+    .elephant-black {
+        background-position: -263px -166px;
+    }
+
+    .queen-white {
+        background-position: -10px -333px;
+    }
+
+    .queen-black {
+        background-position: -259px -333px;
+    }
+
+
+    .king-white {
+        background-position: -11px -413px;
+    }
+
+    .king-black {
+        background-position: -258px -413px;
+    }
