@@ -3,12 +3,23 @@
 */
 
 (function(){
-    $("#start").onclick(function(){
-        
-    });
+    $("#start").on("click", startGame);
     $(".figure").on("mousedown", gameControl);
     
 })();
+
+function startGame() {
+    /**
+    *  This function begins new geme
+    *  @param {nothing}
+    *  @return {noting}
+    */
+
+    document.gamers = [
+        new Gamer(),
+        new Gamer()
+    ]
+};
 
 function gameControl(event) {
     /**
@@ -59,7 +70,25 @@ function transformToFigure($figure) {
     return figure;
 };
 
-//These functions are classes for figures
+// This function is constructor for gamer
+
+function Gamer() {
+    this.gamerId = Number(Math.random()*10000);
+    this._countMove = 0;
+    this.color = null;
+    this.figures = [];
+
+    this.getCountMove = function() {
+        return this._countMove;
+    };
+
+    this.move = function() {
+        this._countMove++;
+        return this._countMove;
+    };
+}
+
+//These functions are constructors for figures
 
 function Pawn() {
 };
