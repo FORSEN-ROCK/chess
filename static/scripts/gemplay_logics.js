@@ -29,8 +29,23 @@ function startGame() {
         console.log("pageY-> " + event.pageY) 
     });*/
 
-    $(".chess-place").on("mouseover", function(event) {
-        console.log("come to elemen -> " + event.target.id);
+    $(".chess-place").on("click", function(event) {
+        /**
+		*	This listener catch click on new cell
+		*	@param {object} event
+		*	@return {nothing}
+		*/
+
+		var target = $(event.target);
+
+		if(target.hasClass("chess-cell") &&
+		   document.selectedFigure != undefined){
+				var figure = $("#" + document.selectedFigure).detach();
+
+				figure.appendTo(target);
+				document.chessBoard.deactivateBoard();
+				document.selectedFigure = undefined;
+		}
     });
 
     // Create the chess figures for forEach gamers
@@ -481,7 +496,7 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
         var self = this;
 
         $("<div/>", {
-            id: this.figureId,
+            id: this.getFigureId(),
             class: "figure " + this._cssClass + this._color,
             on: {
                 click: function(event) {
@@ -490,6 +505,9 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
                     //document.chessBoard.deactivateBoard();
                 },
                 mousedown: function(event) {
+					// Save the selected figure
+					document.selectedFigure = event.target.id;
+
                     // Define where can be to moved chosed figure
                     var availableSteps = self.getAvailableStaps(
                                             document.chessBoard.rows
@@ -514,7 +532,7 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
                     */
                 },
                 mouseup: function(event) {
-                    document.chessBoard.deactivateBoard();
+                    //document.chessBoard.deactivateBoard();
                 }
             }
         }).appendTo(parentCell);
