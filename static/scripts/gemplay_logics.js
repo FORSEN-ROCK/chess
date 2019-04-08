@@ -167,16 +167,6 @@ function game(gamers, chessBoard) {
         });
     }
 };
-/*
-function gameControl(event) {
-    /**
-    *  This function process user actions
-    *  @param {event-object} event is standart js object for action
-    *  @return {nothing}
-    *
-    var figure = transformToFigure($(event.target));
-    console.log(figure);
-};*/
 
 // This function creates game area
 function transformCellToAreal() {
@@ -211,48 +201,7 @@ function transformCellToAreal() {
     return chessArea;
 };
 
-/*
-function transformToFigure($figure) {
-    /**
-    *  This function transforms jq-object to js-object
-    *  @param {jq-object} $figure is source jq-object
-    *  @return {js-object} figure
-    */
-/*
-    var className = $figure.attr("class");
-
-    className = className.split(" ")[1];
-    className = className.split("-")[0];
-    console.log(className);
-
-    switch(className) {
-        case "pawn" :
-            figure = new Pawn();
-            break;
-        case "rook":
-            figure = new Rook();
-            break;
-        case "horse":
-            figure = new Horse();
-            break;
-        case "elephant":
-            figure = new Elephant();
-            break;
-        case "queen":
-            figure = new Queen();
-            break;
-        case "king":
-            figure = new King();
-            break;
-        default:
-            figure = null;
-    }
-
-    return figure;
-};*/
-
 // This function is constructor for gamer
-
 function Gamer(color) {
     this.gamerId = Math.floor(Math.random()*10000);
     this._countMove = 0;
@@ -312,7 +261,6 @@ function Gamer(color) {
 }
 
 // This function is constructor for cell of board
-
 var NAME_OF_COLUMN = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
 function Cell(row, column, absnumber) {
@@ -440,8 +388,8 @@ function ChessBoard(rows) {
         });
     };
 };
-// Base class for figure
 
+// Base class for figure
 function Figure(gamerId, startPosition, color, gamerDirection) {
     this._figureId = Math.floor(Math.random()*10000);
     this._ownerId = gamerId;
@@ -565,7 +513,6 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
 };
 
 // These functions are constructors for figures
-
 function Pawn(gamerId, startPosition, color, gamerDirection) {
     Figure.apply(this, arguments);
 
@@ -991,6 +938,37 @@ function King() {
 
         var startRow = this._oldPosition.row;
         var startColumn = this._oldPosition.column;
+        var availableCell = [];
+
+        // Find empty cells for king
+        for(var ofsetRow = -1; ofsetRow <= 1; ofsetRow++) {
+            if((startRow + ofsetRow >= 0) && (startRow + ofsetRow <= 7)) {
+                if(chessArea[startRow + ofsetRow][startColumn].getIsEmpty()) {
+                    availableCell.push(
+                        chessArea[startRow + ofsetRow][startColumn]
+                    );
+                }
+
+                if(startColumn - 1 >= 0) {
+                    if(chessArea[startRow + ofsetRow][startColumn - 1].getIsEmpty()) {
+                        availableCell.push(
+                            chessArea[startRow + ofsetRow][startColumn - 1]
+                        );
+                    }
+                }
+
+                if(startColumn + 1 <= 7) {
+                    if(chessArea[startRow + ofsetRow][startColumn + 1].getIsEmpty()) {
+                        availableCell.push(
+                            chessArea[startRow + ofsetRow][startColumn + 1]
+                        );
+                    }
+                }
+            }
+            
+        }
+
+        return availableCell;
     };
 
     this.getEatingAim = function(chessBoard) {
