@@ -131,6 +131,10 @@ html, body {
     height: 68px;
 }
 
+.shadow-figure {
+    position: absolute;
+}
+
     .pawn-white {
         background-position: -6px -11px;
     }

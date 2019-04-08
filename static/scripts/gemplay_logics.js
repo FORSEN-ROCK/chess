@@ -24,6 +24,15 @@ function startGame() {
     var rows = transformCellToAreal();
     document.chessBoard = new ChessBoard(rows);
 
+    /*$(".chess-place").on("mousemove", function(event) {
+        console.log("pageX-> " + event.pageX);
+        console.log("pageY-> " + event.pageY) 
+    });*/
+
+    $(".chess-place").on("mouseover", function(event) {
+        console.log("come to elemen -> " + event.target.id);
+    });
+
     // Create the chess figures for forEach gamers
     document.gamers.map(function(gamer) {
         createFigureForGamer(gamer, document.chessBoard.rows)
@@ -156,7 +165,7 @@ function game(gamers, chessBoard) {
                 });
             }
 
-            // Checks chees board changes
+            // Checks chess board changes
             chessBoard.calculateChanged();
         }
 
