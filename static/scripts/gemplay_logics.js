@@ -31,21 +31,33 @@ function startGame() {
 
     $(".chess-place").on("click", function(event) {
         /**
-		*	This listener catch click on new cell
-		*	@param {object} event
-		*	@return {nothing}
-		*/
+        *   This listener catch click on new cell and handles game
+        *   @param {object} event
+        *   @return {nothing}
+        */
 
-		var target = $(event.target);
+        var target = $(event.target);
+        var selectedFigure = document.selectedFigure;
 
-		if(target.hasClass("chess-cell") &&
-		   document.selectedFigure != undefined){
-				var figure = $("#" + document.selectedFigure).detach();
+        if(target.hasClass("chess-cell") &&
+           selectedFigure != undefined){
+                //var figure = $("#" + selectedFigure.getFigureId()).detach();
+                var newCell = document.chessBoard.getCell(target.attr("id"));
 
-				figure.appendTo(target);
-				document.chessBoard.deactivateBoard();
-				document.selectedFigure = undefined;
-		}
+
+
+                //selectedFigure.setNewPosition(newCell);
+                console.log(newCell);
+                var isMoved = selectedFigure.move(newCell);
+                console.log("isMoved -> " + isMoved);
+                if(isMoved) {
+                    selectedFigure.goTo(newCell);
+                    document.chessBoard.deactivateBoard();
+                }
+                //figure.appendTo(target);
+                //document.chessBoard.deactivateBoard();
+                document.selectedFigure = undefined;
+        }
     });
 
     // Create the chess figures for forEach gamers
@@ -406,11 +418,46 @@ function ChessBoard(rows) {
         */
 
         this.rows.forEach(function(row) {
-            row.forEach(function(cell){
+            row.forEach(function(cell) {
                 cell.deactivate();
             });
         });
     };
+
+    this.getCell = function(cellId) {
+        /**
+        *   This method find cell by cellId
+        *   @param {number} cellId
+        *   @return {object} cell
+        */
+        /*
+        var cell = this.rows.forEach(function(row) {
+            var cell = row.forEach(function(cell) {
+                        console.log("cellId -> " + cellId);
+                        console.log("cell.getId() -> " + cell.getId());
+                        if(cell.getId() == cellId) {
+                            console.log("cell oj -> " + cell);
+                            return cell;
+                        }
+            });
+            return cell;
+        });
+
+        return cell;
+    };*/
+        var cell;
+
+        for(var row = 0; row < this.rows.length; row++) {
+            for(var column = 0; column < this.rows[row].length; column++) {
+                if(this.rows[row][column].getId() == cellId) {
+                        cell = this.rows[row][column];
+                        break;
+                }
+            }
+        }
+
+        return cell;
+    }
 };
 
 // Base class for figure
@@ -423,6 +470,7 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
     this._color = color || "white";
     this._cssClass = null; 
     this._direction = gamerDirection;
+    this._availableSteps;
 
     this.getIsChosed = function() {
         /**
@@ -487,9 +535,36 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
         return isChanged;
     };
 
-    this.move = function() {
-        //this._isFirst = false;
-        this._oldPosition = this._newPosition;
+    this.setNewPosition = function(cell) {
+        this._newPosition = cell;
+    };
+
+    this.move = function(newPosition) {
+        /**
+        *   This metod moves figure to new available cell
+        *   @param {object} newPosition
+        *   @return {boolean} isMoved 
+        */
+
+        var canBeMoved = false;
+        var isMoved = false;
+
+        for(var cellIndex = 0; cellIndex < this._availableSteps.length;
+            cellIndex++) {
+            
+            if(this._availableSteps[cellIndex] == newPosition)
+                canBeMoved = true;
+        }
+
+        if(canBeMoved) {
+            //this._oldPosition.changeEmpty();
+            //this._oldPosition = this._newPosition;
+            //this._newPosition.changeEmpty();
+            this._newPosition = newPosition;
+            isMoved = true;
+        }
+
+        return isMoved;
     };
 
     this.show = function(parentCell) {
@@ -506,7 +581,7 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
                 },
                 mousedown: function(event) {
 					// Save the selected figure
-					document.selectedFigure = event.target.id;
+					document.selectedFigure = self;
 
                     // Define where can be to moved chosed figure
                     var availableSteps = self.getAvailableStaps(
@@ -537,6 +612,17 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
             }
         }).appendTo(parentCell);
     };
+
+    this.goTo = function(newCell) {
+        /**
+        *   This method show figure on new cell
+        *   @param {object} newCell
+        *   @return {nothing}
+        */
+
+        var figureBody = $("#" + this.getFigureId()).detach();
+        figureBody.appendTo("#" + newCell.getId());        
+    }
 };
 
 // These functions are constructors for figures
@@ -580,6 +666,8 @@ function Pawn(gamerId, startPosition, color, gamerDirection) {
                     }
             }
         }
+
+        this._availableSteps = availableCell;
 
         return availableCell;
     };
