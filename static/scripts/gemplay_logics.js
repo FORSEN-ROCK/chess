@@ -2,6 +2,16 @@
 *   This script adds base game logics for html chess
 */
 
+/**
+*   Future
+*   Rename methods in class Figure
+*       getAvailableStps -> findAvailableStaps
+*       getEatingAims -> findEatingAims
+*   Define methods in class Figure
+*       getAvalibleStaps -> return this._availableSteps
+*       getEatingEatingAims -> return this._eatingAims
+*       getAllSteps -> return this._availableStaps + this._eatingAims
+*/
 (function(){
     $("#start").on("click", startGame);
     //$(".figure").on("mousedown", gameControl);
@@ -24,10 +34,8 @@ function startGame() {
     var rows = transformCellToAreal();
     document.chessBoard = new ChessBoard(rows);
 
-    /*$(".chess-place").on("mousemove", function(event) {
-        console.log("pageX-> " + event.pageX);
-        console.log("pageY-> " + event.pageY) 
-    });*/
+    // Set mpde of game
+    document.firstTouch = false;
 
     $(".chess-place").on("click", function(event) {
         /**
@@ -38,13 +46,11 @@ function startGame() {
 
         var target = $(event.target);
         var selectedFigure = document.selectedFigure;
+        console.log("selectedFigure -> " + selectedFigure.getFigureId());
 
         if(target.hasClass("chess-cell") &&
            selectedFigure != undefined){
-                //var figure = $("#" + selectedFigure.getFigureId()).detach();
                 var newCell = document.chessBoard.getCell(target.attr("id"));
-
-
 
                 //selectedFigure.setNewPosition(newCell);
                 console.log(newCell);
@@ -56,7 +62,7 @@ function startGame() {
                 }
                 //figure.appendTo(target);
                 //document.chessBoard.deactivateBoard();
-                document.selectedFigure = undefined;
+                //document.selectedFigure = undefined;
         }
     });
 
@@ -430,21 +436,7 @@ function ChessBoard(rows) {
         *   @param {number} cellId
         *   @return {object} cell
         */
-        /*
-        var cell = this.rows.forEach(function(row) {
-            var cell = row.forEach(function(cell) {
-                        console.log("cellId -> " + cellId);
-                        console.log("cell.getId() -> " + cell.getId());
-                        if(cell.getId() == cellId) {
-                            console.log("cell oj -> " + cell);
-                            return cell;
-                        }
-            });
-            return cell;
-        });
 
-        return cell;
-    };*/
         var cell;
 
         for(var row = 0; row < this.rows.length; row++) {
@@ -529,8 +521,8 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
         *   @return {boolean} _isChanged
         */
 
-        var isChanged = (this._newPosition.row == this._oldPosition.row) &&
-                        (this._newPosition.column == this._oldPosition.column);
+        var isChanged = (this._newPosition.row != this._oldPosition.row) &&
+                        (this._newPosition.column != this._oldPosition.column);
 
         return isChanged;
     };
@@ -581,30 +573,48 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
                 },
                 mousedown: function(event) {
 					// Save the selected figure
-					document.selectedFigure = self;
+                    if(document.selectedFigure == undefined)
+                        document.selectedFigure = self;
 
-                    // Define where can be to moved chosed figure
-                    var availableSteps = self.getAvailableStaps(
-                                            document.chessBoard.rows
-                    );
+                    // Rule of not first touch
+                    if(!document.firstTouch) {
+                        document.selectedFigure = self;
+                    }
 
-                    // Define what can the figure eat
-                    var eatingAim = self.getEatingAim(
-                                            document.chessBoard.rows
-                    );
-                    console.log(availableSteps);
+                    // Rule of first touch
+                    if(document.selectedFigure == self) {
+                        console.log("figure.document.selectedFigure -> " + self.getFigureId());
+                        // Define where can be to moved chosed figure
+                        var availableSteps = self.getAvailableStaps(
+                                                document.chessBoard.rows
+                        );
+
+                        // Define what can the figure eat
+                        var eatingAim = self.getEatingAim(
+                                                document.chessBoard.rows
+                        );
+                        //console.log(availableSteps);
+
+                        // Paint available cells for chosed figure
+                        availableSteps.forEach(function(cell) {
+                            cell.showAvailability();
+                        });
+
+                        // Paint all eating aim for the figure
+                        /*
+                        eatingAim.forEach(function(cell) {
+                            cell.showEdible();
+                        });
+                        */
+                    }
+
+                    // At first deactivate chess cell
+                    document.chessBoard.deactivateBoard();
 
                     // Paint available cells for chosed figure
                     availableSteps.forEach(function(cell) {
                         cell.showAvailability();
                     });
-
-                    // Paint all eating aim for the figure
-                    /*
-                    eatingAim.forEach(function(cell) {
-                        cell.showEdible();
-                    });
-                    */
                 },
                 mouseup: function(event) {
                     //document.chessBoard.deactivateBoard();
@@ -615,13 +625,15 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
 
     this.goTo = function(newCell) {
         /**
-        *   This method show figure on new cell
+        *   This method show figure on new cell and
+        *   Remove saved figure
         *   @param {object} newCell
         *   @return {nothing}
         */
 
         var figureBody = $("#" + this.getFigureId()).detach();
-        figureBody.appendTo("#" + newCell.getId());        
+        figureBody.appendTo("#" + newCell.getId());
+        document.selectedFigure = undefined;
     }
 };
 
