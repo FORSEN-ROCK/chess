@@ -660,21 +660,25 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
                             );
 
                             // Define what can the figure eat
-                            var eatingAim = self.getEatingAim(
+                            var eatingAims = self.getEatingAim(
                                                     document.chessBoard.rows
                             );
 
                             // Paint available cells for chosed figure
-                            availableSteps.forEach(function(cell) {
+                            /*availableSteps.forEach(function(cell) {
                                 cell.showAvailability();
-                            });
+                            });*/
 
                             // Paint all eating aim for the figure
-                            /*
-                            eatingAim.forEach(function(cell) {
-                                cell.showEdible();
-                            });
-                            */
+                            if(eatingAims.length > 0) {
+                                eatingAims.forEach(function(figure) {
+                                    figure.hideAim();
+                                });
+
+                                eatingAims.forEach(function(figure) {
+                                    figure.showAsAim();
+                                });
+                            }
                         }
 
                         // At first deactivate chess cell
@@ -704,6 +708,32 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
 
         // Remove selected figure
         document.selectedFigure = undefined;
+    };
+
+    this.showAsAim = function() {
+        /**
+        *   This method note figure as the aim
+        *   @param {this} current figure
+        *   @return {nothing} 
+        */
+
+        var figureBody = $("#" + this.getFigureId());
+
+        if(!figureBody.hasClass("aim-figure"))
+            figureBody.addClass("aim-figure");
+    };
+
+    this.hideAim = function() {
+        /**
+        *   This methos hide target aim
+        *   @param {this} current figure
+        *   @return {nothing}
+        */
+
+        var figureBody = $("#" + this.getFigureId());
+
+        if(figureBody.hasClass("aim-figure"))
+            figureBody.removeClass("aim-figure");
     }
 };
 
@@ -766,7 +796,7 @@ function Pawn() {
         *   Selected pawn
         *   @param {this} current pawn
         *   @param {array of array of Cell} chessBoard
-        *   @returned {array of Cell} eatingAims
+        *   @returned {array of figures} eatingAims
         */
 
         var startRow = this._oldPosition.row;
@@ -774,14 +804,23 @@ function Pawn() {
 
         var stopRow = startRow + this._direction;
         var eatingAims = [];
+        var gamer = document.currentGamer;
 
         for(var columnOfset = -1; columnOfset <= 1; columnOfset++) {
-            if(columnOfset != 0 && ((startColumn + columnOfset) >= 0 && (startColumn + columnOfset) <= 7)) {
-                var figureOwnerId = chessBoard[stopRow][startColumn + columnOfset].getFigure().getOwnerId();
-                if(!chessBoard[stopRow][startColumn + columnOfset].getIsEmpty() &&
-                   figureOwnerId !=
+            var columnAim = startColumn + columnOfset;
+
+            if(columnOfset != 0 && ((columnAim >= 0) && (columnAim <= 7))) {
+
+                if(!chessBoard[stopRow][columnAim].getIsEmpty()) {
+                    var figureOwnerId = chessBoard[stopRow][columnAim].getFigure().getOwnerId();
+
+                    if(figureOwnerId != gamer.gamerId)
+                        eatingAims.push(chessBoard[stopRow][columnAim].getFigure());
+                   }
             }
         }
+
+        return eatingAims;
     };
 
     this.saveMove = function() {
