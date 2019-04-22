@@ -12,6 +12,7 @@
 *       getEatingEatingAims -> return this._eatingAims
 *       getAllSteps -> return this._availableStaps + this._eatingAims
 */
+
 (function(){
     $("#start").on("click", startGame);
     //$(".figure").on("mousedown", gameControl);
@@ -62,6 +63,7 @@ function startGame() {
                 if(isMoved) {
                     selectedFigure.goTo(newCell);
                     document.chessBoard.deactivateBoard();
+                    document.chessBoard.deactivateAim();
                 }
 
                 // Check end of the move
@@ -72,6 +74,7 @@ function startGame() {
                     currentGamer.move();
 
                     // Give the other gamer move
+                    
                     choseNextGamer(currentGamer);
                 }
         }
@@ -515,7 +518,25 @@ function ChessBoard(rows) {
         }
 
         return cell;
-    }
+    };
+
+    this.deactivateAim = function() {
+        /**
+        *   This method get every figur on the board 
+        *   And uses figure method hideAim
+        *   @param {this} board
+        *   @return {nothing}
+        */
+
+        this.rows.map(function(row) {
+            row.map(function(cell) {
+                if(!cell.getIsEmpty()) {
+                    console.log("cell.id -> " + cell.getIsEmpty());
+                    cell.getFigure().hideAim();
+                }
+            });
+        });
+    };
 };
 
 // Base class for figure
@@ -528,6 +549,7 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
     this._color = color || "white";
     this._cssClass = null; 
     this._direction = gamerDirection;
+    this._isAim = false;
 
 
     this.getIsChosed = function() {
@@ -578,6 +600,16 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
         */
 
         return this._newPosition;
+    };
+
+    this.getIsAim = function() {
+        /**
+        *   This method returns _isAim property
+        *   @param {this} current figure
+        *   @return {nothing}
+        */
+
+        return this._isAim;
     };
 
     this.isChangePosition = function() {
@@ -671,9 +703,11 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
 
                             // Paint all eating aim for the figure
                             if(eatingAims.length > 0) {
+                                /*
                                 eatingAims.forEach(function(figure) {
                                     figure.hideAim();
                                 });
+                                */
 
                                 eatingAims.forEach(function(figure) {
                                     figure.showAsAim();
@@ -719,8 +753,10 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
 
         var figureBody = $("#" + this.getFigureId());
 
-        if(!figureBody.hasClass("aim-figure"))
+        if(!figureBody.hasClass("aim-figure")) {
             figureBody.addClass("aim-figure");
+            this._isAim = true;
+        }
     };
 
     this.hideAim = function() {
@@ -732,8 +768,10 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
 
         var figureBody = $("#" + this.getFigureId());
 
-        if(figureBody.hasClass("aim-figure"))
+        if(figureBody.hasClass("aim-figure")) {
             figureBody.removeClass("aim-figure");
+            this._isAim = false;
+        }
     }
 };
 
