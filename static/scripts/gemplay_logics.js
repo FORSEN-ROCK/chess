@@ -52,12 +52,15 @@ function startGame() {
         var selectedFigure = document.selectedFigure;
         var currentGamer = document.currentGamer;
 
+        // Moved figure without eating
         if(target.hasClass("chess-cell") &&
            selectedFigure != undefined){
                 var newCell = document.chessBoard.getCell(target.attr("id"));
 
                 console.log(newCell);
-                var availableSteps = selectedFigure.getAvailableStaps(document.chessBoard.rows);
+                var availableSteps = selectedFigure.getAvailableStaps(
+                                                document.chessBoard.rows
+                );
                 var isMoved = selectedFigure.move(newCell, availableSteps);
 
                 if(isMoved) {
@@ -68,15 +71,30 @@ function startGame() {
 
                 // Check end of the move
                 var isMoveFinished = currentGamer.finishMove();
-                console.log("isMoveFinished -> " + isMoveFinished);
+                //console.log("isMoveFinished -> " + isMoveFinished);
 
                 if(isMoveFinished) {
                     currentGamer.move();
 
                     // Give the other gamer move
-                    
                     choseNextGamer(currentGamer);
                 }
+        }
+
+        // Moved figure with eating
+        if(target.hasClass("figure") &&
+           selectedFigure != undefined &&
+           target.attr("id") != selectedFigure.getFigureId()) {
+
+            // At first get target figure and check figure owner
+            
+            // Is not current gamer owner?
+            // Can we move figure there?
+                // Eat it!
+                // Save move 
+
+            //var newCell = document.chessBoard.getCell(target.attr("id"));
+            //console.log("Eating cell.id -> " + target.attr("id"));
         }
     });
 
@@ -520,6 +538,20 @@ function ChessBoard(rows) {
         return cell;
     };
 
+    this.getFigure = function(figureId) {
+        /**
+        *   This method find figure by id on the board
+        *   @param {number} figureId
+        *   @return {object} figure 
+        */
+
+        var gamerOne = document.gamers[0];
+        var gamerTwo = document.gamers[1];
+        var allFigures = gamerOne.figures + gamerTwo.figures;
+
+        
+    };
+
     this.deactivateAim = function() {
         /**
         *   This method get every figur on the board 
@@ -531,7 +563,6 @@ function ChessBoard(rows) {
         this.rows.map(function(row) {
             row.map(function(cell) {
                 if(!cell.getIsEmpty()) {
-                    console.log("cell.id -> " + cell.getIsEmpty());
                     cell.getFigure().hideAim();
                 }
             });
