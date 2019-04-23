@@ -87,12 +87,18 @@ function startGame() {
            target.attr("id") != selectedFigure.getFigureId()) {
 
             // At first get target figure and check figure owner
-            
+            var aimFigure = document.chessBoard.getFigure(target.attr("Id"));
+
             // Is not current gamer owner?
-            // Can we move figure there?
+            if(aimFigure != undefined && 
+               aimFigure.getOwnerId() != currentGamer.gamerId) {
+
+                   var isMoved = selectedFigure.move();
+
+                // Can we move figure there?
                 // Eat it!
                 // Save move 
-
+            }
             //var newCell = document.chessBoard.getCell(target.attr("id"));
             //console.log("Eating cell.id -> " + target.attr("id"));
         }
@@ -548,8 +554,16 @@ function ChessBoard(rows) {
         var gamerOne = document.gamers[0];
         var gamerTwo = document.gamers[1];
         var allFigures = gamerOne.figures + gamerTwo.figures;
+        var targetFigure = undefined; 
 
-        
+        for(var itemFigure in allFigures) {
+            if(itemFigure.getFigureId() == figureId) {
+                targetFigure = itemFigure;
+                break;
+            }
+        }
+
+        return targetFigure;
     };
 
     this.deactivateAim = function() {
