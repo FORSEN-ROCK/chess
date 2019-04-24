@@ -55,30 +55,20 @@ function startGame() {
         // Moved figure without eating
         if(target.hasClass("chess-cell") &&
            selectedFigure != undefined){
-                var newCell = document.chessBoard.getCell(target.attr("id"));
 
-                console.log(newCell);
-                var availableSteps = selectedFigure.getAvailableStaps(
-                                                document.chessBoard.rows
-                );
-                var isMoved = selectedFigure.move(newCell, availableSteps);
+            var newCell = document.chessBoard.getCell(target.attr("id"));
 
-                if(isMoved) {
-                    selectedFigure.goTo(newCell);
-                    document.chessBoard.deactivateBoard();
-                    document.chessBoard.deactivateAim();
-                }
+            var availableSteps = selectedFigure.getAvailableStaps(
+                                             document.chessBoard.rows
+            );
+            var isMoved = selectedFigure.move(newCell, availableSteps);
 
-                // Check end of the move
-                var isMoveFinished = currentGamer.finishMove();
-                //console.log("isMoveFinished -> " + isMoveFinished);
-
-                if(isMoveFinished) {
-                    currentGamer.move();
-
-                    // Give the other gamer move
-                    choseNextGamer(currentGamer);
-                }
+            if(isMoved) {
+                selectedFigure.getNewPosition().putFigure(selectedFigure);
+                selectedFigure.goTo(newCell);
+                document.chessBoard.deactivateBoard();
+                document.chessBoard.deactivateAim();
+            }
         }
 
         // Moved figure with eating
@@ -88,19 +78,55 @@ function startGame() {
 
             // At first get target figure and check figure owner
             var aimFigure = document.chessBoard.getFigure(target.attr("Id"));
+            console.log("aim -> " + aimFigure);
 
             // Is not current gamer owner?
             if(aimFigure != undefined && 
                aimFigure.getOwnerId() != currentGamer.gamerId) {
 
-                   var isMoved = selectedFigure.move();
+                    var movedPosition = aimFigure.getOldPosition();
+
+                    var eatingSteps = selectedFigure.getEatingAim(
+                                            document.chessBoard.rows
+                    );
+
+                    var isMoved = selectedFigure.move(
+                                        movedPosition,
+                                        eatingSteps
+                    );
+                    console.log("is moved for eating -> " + isMoved);
+                    console.log("eating steps -> " + eatingSteps);
 
                 // Can we move figure there?
-                // Eat it!
-                // Save move 
+                if(isMoved) {
+                    aimFigure.die();
+                    //aimFigure = null;
+                    //Delete figure for gamer
+                    document.gamers.map(function(gamer) {
+                        for(var index = 0; index < gamer.figures.length; index++){
+                            if(gamer.figures[index].getFigureId() == aimFigure.getFigureId()) {
+                                delete gamer.figures[index];
+                            }
+                        }
+                    });
+
+                    selectedFigure.goTo(movedPosition);
+                    document.chessBoard.deactivateBoard();
+                    document.chessBoard.deactivateAim();
+                }                    
             }
-            //var newCell = document.chessBoard.getCell(target.attr("id"));
-            //console.log("Eating cell.id -> " + target.attr("id"));
+        }
+
+        // Check end of the move
+        var isMoveFinished = currentGamer.finishMove();
+        //console.log("isMoveFinished -> " + isMoveFinished);
+
+        if(isMoveFinished) {
+            currentGamer.move();
+
+            // Give the other gamer move
+            choseNextGamer(currentGamer);
+            aimFigure = undefined;
         }
     });
 
@@ -139,7 +165,7 @@ function createFigureForGamer(gamer, chessArea) {
 
     var figuresOnBoard = $(".figure");
     /*
-    if(figuresOnBoard.lenght > 0) {
+    if(figuresOnBoard.length > 0) {
         var createNew = confirm("Create new game?");
 
         if(createNew) {
@@ -374,7 +400,7 @@ function Gamer(color) {
 
         // Find moved figure
         var movedFigure = this.figures.filter(function(figure) {
-            console.log("figureId -> " + figure.getFigureId() + " isChangePosition -> " + figure.isChangePosition());
+            //console.log("figureId -> " + figure.getFigureId() + " isChangePosition -> " + figure.isChangePosition());
             return figure.isChangePosition();
         });
 
@@ -553,12 +579,13 @@ function ChessBoard(rows) {
 
         var gamerOne = document.gamers[0];
         var gamerTwo = document.gamers[1];
-        var allFigures = gamerOne.figures + gamerTwo.figures;
-        var targetFigure = undefined; 
+        var allFigures = gamerOne.figures.concat(gamerTwo.figures);
+        var targetFigure = undefined;
 
-        for(var itemFigure in allFigures) {
-            if(itemFigure.getFigureId() == figureId) {
-                targetFigure = itemFigure;
+        for(var itemFigure = 0; itemFigure < allFigures.length; itemFigure++) {
+            console.log(allFigures[itemFigure].getFigureId());
+            if(allFigures[itemFigure].getFigureId() == figureId) {
+                targetFigure = allFigures[itemFigure];
                 break;
             }
         }
@@ -694,7 +721,7 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
         if(canBeMoved) {
             this._oldPosition.takeFigure();
             this._newPosition = newPosition;
-            this._newPosition.putFigure(this);
+            //this._newPosition.putFigure(this);
             isMoved = true;
         }
 
@@ -754,8 +781,8 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
                                 });
                                 */
 
-                                eatingAims.forEach(function(figure) {
-                                    figure.showAsAim();
+                                eatingAims.forEach(function(cell) {
+                                    cell.getFigure().showAsAim();
                                 });
                             }
                         }
@@ -817,12 +844,28 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
             figureBody.removeClass("aim-figure");
             this._isAim = false;
         }
-    }
+    };
+
+    this.die = function() {
+        /**
+        *   This method delete figure
+        *   @param {this} current figure
+        *   @return {nothing}
+        */
+
+        // Delete figure in interface
+        $("#" + this.getFigureId()).remove();
+        
+        // Clear positions 
+        this._oldPosition = null;
+        this._newPosition = null;
+    };
 };
 
 // These functions are constructors for figures
 function Pawn() {
     Figure.apply(this, arguments);
+
     var baseSaveMove = this.saveMove;
 
     this._isFirstStep = true;
@@ -898,7 +941,7 @@ function Pawn() {
                     var figureOwnerId = chessBoard[stopRow][columnAim].getFigure().getOwnerId();
 
                     if(figureOwnerId != gamer.gamerId)
-                        eatingAims.push(chessBoard[stopRow][columnAim].getFigure());
+                        eatingAims.push(chessBoard[stopRow][columnAim]);//.getFigure());
                    }
             }
         }
