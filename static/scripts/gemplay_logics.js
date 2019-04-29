@@ -94,20 +94,21 @@ function startGame() {
                                         movedPosition,
                                         eatingSteps
                     );
-                    console.log("is moved for eating -> " + isMoved);
-                    console.log("eating steps -> " + eatingSteps);
 
                 // Can we move figure there?
                 if(isMoved) {
                     aimFigure.die();
-                    //aimFigure = null;
+
                     //Delete figure for gamer
                     document.gamers.map(function(gamer) {
-                        for(var index = 0; index < gamer.figures.length; index++){
-                            if(gamer.figures[index].getFigureId() == aimFigure.getFigureId()) {
-                                delete gamer.figures[index];
-                            }
-                        }
+                        gamer.figures = gamer.figures.filter(function(figure) {
+                            var isNotDeleted = (
+                                    figure.getFigureId() != 
+                                    aimFigure.getFigureId()
+                            );
+
+                            return isNotDeleted;
+                        });
                     });
 
                     selectedFigure.goTo(movedPosition);
@@ -583,7 +584,7 @@ function ChessBoard(rows) {
         var targetFigure = undefined;
 
         for(var itemFigure = 0; itemFigure < allFigures.length; itemFigure++) {
-            console.log(allFigures[itemFigure].getFigureId());
+
             if(allFigures[itemFigure].getFigureId() == figureId) {
                 targetFigure = allFigures[itemFigure];
                 break;
@@ -622,6 +623,8 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
     this._cssClass = null; 
     this._direction = gamerDirection;
     this._isAim = false;
+    this._availableStaps = [];
+    this._eatingAims = [];
 
 
     this.getIsChosed = function() {
@@ -683,6 +686,33 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
 
         return this._isAim;
     };
+    /*
+    this.getAvailableStaps = function(chessBoard) {
+        /**
+        *   This method calls private method of class Figure
+        *   And returns privat proerty _availableStaps
+        *   @param {array of row } chessBoard
+        *   @retyrn {array of cell} availableSteps
+        /
+
+        this._defineSteps(chessBoard);
+
+        return this._availableStaps;
+    };
+
+    this.getEatingAim = function(chessBoard) {
+        /**
+        *   This method calls private method of class Figure
+        *   And returns privat proerty _eatingAims
+        *   @param {array of row } chessBoard
+        *   @retyrn {array of cell} eatingAim
+        /
+
+        this._defineSteps(chessBoard);
+
+        return this._eatingAims;
+    };
+    */
 
     this.isChangePosition = function() {
         /**
@@ -881,6 +911,10 @@ function Pawn() {
         *   @returnd {array of Cell} availableCell
         */
 
+        // Delete old steps
+        this._availableStaps = [];
+        this._eatingAims = [];
+
         var startRow = this._oldPosition.row;
         var startColumn = this._oldPosition.column;
         var canStep = 1;
@@ -922,7 +956,7 @@ function Pawn() {
         *   Selected pawn
         *   @param {this} current pawn
         *   @param {array of array of Cell} chessBoard
-        *   @returned {array of figures} eatingAims
+        *   @returned {array of cell} eatingAims
         */
 
         var startRow = this._oldPosition.row;
@@ -941,7 +975,7 @@ function Pawn() {
                     var figureOwnerId = chessBoard[stopRow][columnAim].getFigure().getOwnerId();
 
                     if(figureOwnerId != gamer.gamerId)
-                        eatingAims.push(chessBoard[stopRow][columnAim]);//.getFigure());
+                        eatingAims.push(chessBoard[stopRow][columnAim]);
                    }
             }
         }
@@ -1017,7 +1051,7 @@ function Rook() {
         return availableCell;
     };
 
-    this.getEatingAim = function(chessBoard) {
+    this.getEatingAim = function(chessBoard, currentGamer) {
         /**
         *   This method calculates all eating aim for
         *   Selected rook
@@ -1025,6 +1059,10 @@ function Rook() {
         *   @param {array of array of Cell} chessBoard
         *   @returned {array of Cell} eatingAims
         */
+
+        var startRow = this._oldPosition.row;
+        var startColumn = this._oldPosition.column;
+        var eatingAim = [];
     };
 };
 
