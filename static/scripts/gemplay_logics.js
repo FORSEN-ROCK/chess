@@ -87,7 +87,8 @@ function startGame() {
                     var movedPosition = aimFigure.getOldPosition();
 
                     var eatingSteps = selectedFigure.getEatingAim(
-                                            document.chessBoard.rows
+                                            document.chessBoard.rows,
+                                            currentGamer
                     );
 
                     var isMoved = selectedFigure.move(
@@ -795,7 +796,8 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
 
                             // Define what can the figure eat
                             var eatingAims = self.getEatingAim(
-                                                    document.chessBoard.rows
+                                                    document.chessBoard.rows,
+                                                    document.currentGamer
                             );
 
                             // Paint available cells for chosed figure
@@ -950,7 +952,7 @@ function Pawn() {
         return availableCell;
     };
 
-    this.getEatingAim = function(chessBoard) {
+    this.getEatingAim = function(chessBoard, gamer) {
         /**
         *   This method calculates all eating aim for
         *   Selected pawn
@@ -964,7 +966,7 @@ function Pawn() {
 
         var stopRow = startRow + this._direction;
         var eatingAims = [];
-        var gamer = document.currentGamer;
+        //var gamer = document.currentGamer;
 
         for(var columnOfset = -1; columnOfset <= 1; columnOfset++) {
             var columnAim = startColumn + columnOfset;
@@ -1051,7 +1053,7 @@ function Rook() {
         return availableCell;
     };
 
-    this.getEatingAim = function(chessBoard, currentGamer) {
+    this.getEatingAim = function(chessBoard, gamer) {
         /**
         *   This method calculates all eating aim for
         *   Selected rook
@@ -1133,7 +1135,7 @@ function Horse() {
         return availableCell;
     };
 
-    this.getEatingAim = function(chessBoard) {
+    this.getEatingAim = function(chessBoard, gamer) {
         /**
         *   This method calculates all eating aim for
         *   Selected horse
@@ -1215,7 +1217,7 @@ function Elephant() {
         return availableCell;
     };
 
-    this.getEatingAim = function(chessBoard) {
+    this.getEatingAim = function(chessBoard, gamer) {
         /**
         *   This method calculates all eating aim for
         *   Selected elephant
@@ -1396,7 +1398,7 @@ function King() {
         return availableCell;
     };
 
-    this.getEatingAim = function(chessBoard) {
+    this.getEatingAim = function(chessBoard, gamer) {
         /**
         *   This method calculates all eating aim for
         *   Selected king
