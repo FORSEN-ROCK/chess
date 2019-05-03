@@ -624,9 +624,6 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
     this._cssClass = null; 
     this._direction = gamerDirection;
     this._isAim = false;
-    this._availableStaps = [];
-    this._eatingAims = [];
-
 
     this.getIsChosed = function() {
         /**
@@ -687,33 +684,6 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
 
         return this._isAim;
     };
-    /*
-    this.getAvailableStaps = function(chessBoard) {
-        /**
-        *   This method calls private method of class Figure
-        *   And returns privat proerty _availableStaps
-        *   @param {array of row } chessBoard
-        *   @retyrn {array of cell} availableSteps
-        /
-
-        this._defineSteps(chessBoard);
-
-        return this._availableStaps;
-    };
-
-    this.getEatingAim = function(chessBoard) {
-        /**
-        *   This method calls private method of class Figure
-        *   And returns privat proerty _eatingAims
-        *   @param {array of row } chessBoard
-        *   @retyrn {array of cell} eatingAim
-        /
-
-        this._defineSteps(chessBoard);
-
-        return this._eatingAims;
-    };
-    */
 
     this.isChangePosition = function() {
         /**
@@ -913,10 +883,6 @@ function Pawn() {
         *   @returnd {array of Cell} availableCell
         */
 
-        // Delete old steps
-        this._availableStaps = [];
-        this._eatingAims = [];
-
         var startRow = this._oldPosition.row;
         var startColumn = this._oldPosition.column;
         var canStep = 1;
@@ -1064,7 +1030,69 @@ function Rook() {
 
         var startRow = this._oldPosition.row;
         var startColumn = this._oldPosition.column;
-        var eatingAim = [];
+        var eatingAims = [];
+
+        // Find aim cell to top
+        for(var row = startRow; row <= 7; row++) {
+            var cell = chessBoard[row][startColumn];
+
+            if(row != startRow && !cell.getIsEmpty()) {
+                var figureOwnerId = cell.getFigure().getOwnerId();
+
+                if(figureOwnerId != gamer.gamerId) {
+                    eatingAims.push(chessBoard[row][startColumn]);
+                    break;
+                } else 
+                    break;
+            }
+        }
+
+        // Find aim cell to bottom
+        for(var row = startRow; row >= 0; row--) {
+            var cell = chessBoard[row][startColumn];
+
+            if(row != startRow && !cell.getIsEmpty()) {
+                var figureOwnerId = cell.getFigure().getOwnerId();
+
+                if(figureOwnerId != gamer.gamerId) {
+                    eatingAims.push(chessBoard[row][startColumn]);
+                    break;
+                } else 
+                    break;
+            }
+        }
+
+        // Find aim cell to right
+        for (var column = startColumn; column <= 7; column++) {
+            var cell = chessBoard[startRow][column];
+
+            if(column != startColumn && !cell.getIsEmpty()) {
+                var figureOwnerId = cell.getFigure().getOwnerId();
+
+                if(figureOwnerId != gamer.gamerId) {
+                    eatingAims.push(chessBoard[startRow][column]);
+                    break;
+                } else
+                    break;
+            }
+        }
+
+        // Find aim cell to left
+        for (var column = startColumn; column >= 0; column--) {
+            var cell = chessBoard[startRow][column];
+
+            if(column != startColumn && !cell.getIsEmpty()) {
+                var figureOwnerId = cell.getFigure().getOwnerId();
+
+                if(figureOwnerId != gamer.gamerId) {
+                    eatingAims.push(chessBoard[startRow][column]);
+                    break;
+                } else
+                    break;
+            }
+        }
+
+        return eatingAims;
     };
 };
 
@@ -1084,53 +1112,47 @@ function Horse() {
 
         var startRow = this._oldPosition.row;
         var startColumn = this._oldPosition.column;
+        var possibleAvailable = [];
         var availableCell = [];
 
         if((startRow + 2) <= 7) {
-            if((startColumn + 1) <= 7) {
-                if(chessBoard[startRow + 2][startColumn + 1].getIsEmpty())
-                    availableCell.push(chessBoard[startRow + 2][startColumn + 1]);
-            }
-            if((startColumn - 1) >= 0) {
-                if(chessBoard[startRow + 2][startColumn - 1].getIsEmpty())
-                    availableCell.push(chessBoard[startRow + 2][startColumn - 1]);
-            }
+            if((startColumn + 1) <= 7)
+                possibleAvailable.push(chessBoard[startRow + 2][startColumn + 1]);
+
+            if((startColumn - 1) >= 0)
+                possibleAvailable.push(chessBoard[startRow + 2][startColumn - 1]);
+
         }
 
         if((startRow - 2) >= 0) {
-            if((startColumn + 1) <= 7) {
-                if(chessBoard[startRow - 2][startColumn + 1].getIsEmpty())
-                    availableCell.push(chessBoard[startRow - 2][startColumn + 1]);
-            }
-            if((startColumn - 1) >= 0) {
-                if(chessBoard[startRow - 2][startColumn - 1].getIsEmpty())
-                    availableCell.push(chessBoard[startRow - 2][startColumn - 1]);
-            }
+            if((startColumn + 1) <= 7)
+                possibleAvailable.push(chessBoard[startRow - 2][startColumn + 1]);
+
+            if((startColumn - 1) >= 0)
+                possibleAvailable.push(chessBoard[startRow - 2][startColumn - 1]);
         }
 
         if((startColumn + 2) <= 7) {
-            if((startRow + 1) <= 7) {
-                if(chessBoard[startRow + 1][startColumn + 2].getIsEmpty())
-                    availableCell.push(chessBoard[startRow + 1][startColumn + 2]);
-            }
+            if((startRow + 1) <= 7)
+                possibleAvailable.push(chessBoard[startRow + 1][startColumn + 2]);
 
-            if((startRow - 1) >= 0) {
-                if(chessBoard[startRow - 1][startColumn + 2].getIsEmpty())
-                    availableCell.push(chessBoard[startRow - 1][startColumn + 2]);
-            }
+            if((startRow - 1) >= 0)
+                possibleAvailable.push(chessBoard[startRow - 1][startColumn + 2]);
+
         }
 
         if((startColumn - 2) >= 0) {
-            if((startRow + 1) <= 7) {
-                if(chessBoard[startRow + 1][startColumn - 2].getIsEmpty())
-                    availableCell.push(chessBoard[startRow + 1][startColumn - 2]);
-            }
+            if((startRow + 1) <= 7)
+                possibleAvailable.push(chessBoard[startRow + 1][startColumn - 2]);
 
-            if((startRow - 1) >= 0) {
-                if(chessBoard[startRow - 1][startColumn - 2].getIsEmpty())
-                    availableCell.push(chessBoard[startRow - 1][startColumn - 2]);
-            }
+            if((startRow - 1) >= 0)
+                possibleAvailable.push(chessBoard[startRow - 1][startColumn - 2]);
+
         }
+
+        availableCell = possibleAvailable.filter(function(cell) {
+            return cell.getIsEmpty();
+        });
 
         return availableCell;
     };
@@ -1143,6 +1165,52 @@ function Horse() {
         *   @param {array of array of Cell} chessBoard
         *   @returned {array of Cell} eatingAims
         */
+
+        //
+        var startRow = this._oldPosition.row;
+        var startColumn = this._oldPosition.column;
+        var possibleAims = [];
+        var eatingAims = [];
+
+        if((startRow + 2) <= 7) {
+            if((startColumn + 1) <= 7)
+                possibleAims.push(chessBoard[startRow + 2][startColumn + 1]);
+
+            if((startColumn - 1) >= 0)
+                possibleAims.push(chessBoard[startRow + 2][startColumn - 1]);
+
+        }
+
+        if((startRow - 2) >= 0) {
+            if((startColumn + 1) <= 7)
+                possibleAims.push(chessBoard[startRow - 2][startColumn + 1]);
+
+            if((startColumn - 1) >= 0)
+                possibleAims.push(chessBoard[startRow - 2][startColumn - 1]);
+        }
+
+        if((startColumn + 2) <= 7) {
+            if((startRow + 1) <= 7)
+                possibleAims.push(chessBoard[startRow + 1][startColumn + 2]);
+
+            if((startRow - 1) >= 0)
+                possibleAims.push(chessBoard[startRow - 1][startColumn + 2]);
+        }
+
+        if((startColumn - 2) >= 0) {
+            if((startRow + 1) <= 7)
+                possibleAims.push(chessBoard[startRow + 1][startColumn - 2]);
+
+            if((startRow - 1) >= 0)
+                possibleAims.push(chessBoard[startRow - 1][startColumn - 2]);
+        }
+
+        eatingAims = possibleAims.filter(function(cell) {
+            return !cell.getIsEmpty() && (cell.getFigure().getOwnerId() !=
+                                                              gamer.gamerId);
+        });
+
+        return eatingAims;
     };
 };
 
@@ -1225,6 +1293,82 @@ function Elephant() {
         *   @param {array of array of Cell} chessBoard
         *   @returned {array of Cell} eatingAims
         */
+
+        var startRow = this._oldPosition.row;
+        var startColumn = this._oldPosition.column;
+        var eatingAims = [];
+
+        var isNotFoundLeftToBottom = true;
+        var isNotFoundRightToBottom = true;
+        var isNotFoundLeftToTop = true;
+        var isNotFoundRightToTop = true;
+
+        // Find aim cell to bottom
+        for(var row = startRow - 1, columnOfset = 1; row >= 0; row--, columnOfset++) {
+            var leftColumn = startColumn - columnOfset;
+            var rightColumn = startColumn + columnOfset;
+            var cell = undefined;
+
+            if(leftColumn >= 0) {
+                cell = chessBoard[row][leftColumn];
+
+                if(!chessBoard[row][leftColumn].getIsEmpty() &&
+                   cell.getFigure().getOwnerId() != gamer.gamerId &&
+                   isNotFoundLeftToBottom) {
+                        eatingAims.push(chessBoard[row][leftColumn]);
+                        isNotFoundLeftToBottom = false;
+                }
+            }
+
+            if(rightColumn <= 7) {
+                cell = chessBoard[row][rightColumn];
+
+                if(!cell.getIsEmpty() &&
+                   cell.getFigure().getOwnerId() != gamer.gamerId &&
+                   isNotFoundRightToBottom) {
+                        eatingAims.push(chessBoard[row][rightColumn]);
+                        isNotFoundRightToBottom = false;
+                }
+            }
+
+            if(!isNotFoundLeftToBottom && !isNotFoundRightToBottom)
+                break;
+        }
+
+        // Find aim cell to top
+        for(var row = startRow + 1, columnOfset = 1; row <= 7; row++, columnOfset++) {
+            var leftColumn = startColumn - columnOfset;
+            var rightColumn = startColumn + columnOfset;
+            var cell = undefined;
+
+            if(leftColumn >= 0) {
+                cell = chessBoard[row][leftColumn];
+
+                if(!cell.getIsEmpty() &&
+                   cell.getFigure().getOwnerId() != gamer.gamerId &&
+                   isNotFoundLeftToTop) {
+                        eatingAims.push(chessBoard[row][leftColumn]);
+                        isNotFoundLeftToTop = false;
+                }
+            }
+
+            if(rightColumn <= 7) {
+                cell = chessBoard[row][rightColumn];
+
+                if(!cell.getIsEmpty() &&
+                   cell.getFigure().getOwnerId() != gamer.gamerId &&
+                   isNotFoundRightToTop) {
+                        eatingAims.push(chessBoard[row][rightColumn]);
+                        isNotFoundRightToTop = false;
+                }
+            }
+
+            if(!isNotFoundLeftToTop && !isNotFoundRightToTop)
+                break;
+        }
+        
+
+        return eatingAims;
     };
 };
 
@@ -1338,7 +1482,7 @@ function Queen() {
         return availableCell;
     };
 
-    this.getEatingAim = function(chessBoard) {
+    this.getEatingAim = function(chessBoard, gamer) {
         /**
         *   This method calculates all eating aim for
         *   Selected pawn
@@ -1346,6 +1490,153 @@ function Queen() {
         *   @param {array of array of Cell} chessBoard
         *   @returned {array of Cell} eatingAims
         */
+
+        var startRow = this._oldPosition.row;
+        var startColumn = this._oldPosition.column;
+        var eatingAims = [];
+
+        var isNotFoundLeftToBottom = true;
+        var isNotFoundRightToBottom = true;
+        var isNotFoundLeftToTop = true;
+        var isNotFoundRightToTop = true;
+
+        // Find aim cell to bottom
+        for(var row = startRow - 1, columnOfset = 1; row >= 0; row--, columnOfset++) {
+            var leftColumn = startColumn - columnOfset;
+            var rightColumn = startColumn + columnOfset;
+            var cell;
+
+            if(leftColumn >= 0) {
+                cell = chessBoard[row][leftColumn];
+
+                if(!cell.getIsEmpty() &&
+                   isNotFoundLeftToBottom &&
+                   cell.getFigure().getOwnerId() != gamer.gamerId) {
+                        eatingAims.push(chessBoard[row][leftColumn]);
+                        isNotFoundLeftToBottom = false;
+                }
+            }
+
+            if(rightColumn <= 7) {
+                cell = chessBoard[row][rightColumn];
+
+                if(!cell.getIsEmpty() &&
+                   isNotFoundRightToBottom &&
+                   cell.getFigure().getOwnerId() != gamer.gamerId) {
+                        eatingAims.push(chessBoard[row][rightColumn]);
+                        isNotFoundRightToBottom = false;
+                }
+            }
+
+            if(!isNotFoundLeftToBottom && !isNotFoundRightToBottom)
+                break;
+        }
+
+        // Find aim cell to top
+        for(var row = startRow + 1, columnOfset = 1; row <= 7; row++, columnOfset++) {
+            var leftColumn = startColumn - columnOfset;
+            var rightColumn = startColumn + columnOfset;
+            var cell;
+
+            if(leftColumn >= 0) {
+                cell = chessBoard[row][leftColumn];
+
+                if(!cell.getIsEmpty() &&
+                   isNotFoundLeftToTop &&
+                   cell.getFigure().getOwnerId() != gamer.gamerId) {
+                        eatingAims.push(cell);
+                        isNotFoundLeftToTop = false;
+                }
+            }
+
+            if(rightColumn <= 7) {
+                cell = chessBoard[row][rightColumn];
+
+                if(!cell.getIsEmpty() &&
+                   isNotFoundRightToTop &&
+                   cell.getFigure().getOwnerId() != gamer.gamerId) {
+                        eatingAims.push(cell);
+                        isNotFoundRightToTop = false;
+                }
+            }
+
+            if(!isNotFoundLeftToTop && !isNotFoundRightToTop)
+                break;
+        }
+
+        // Find aim cell to top
+        for(var row = startRow; row <= 7; row++) {
+            var cell = chessBoard[row][startColumn];
+
+            if(row != startRow) {
+                if(!cell.getIsEmpty() &&
+                   cell.getFigure().getOwnerId() != gamer.gamerId) {
+                        eatingAims.push(cell);
+                        break;
+                }
+
+                if(!cell.getIsEmpty() &&
+                   cell.getFigure().getOwnerId() == gamer.gamerId) {
+                       break;
+                }
+            }
+        }
+
+        // Find aim cell to bottom
+        for(var row = startRow; row >= 0; row--) {
+            var cell = chessBoard[row][startColumn];
+
+            if(row != startRow) {
+                if(!cell.getIsEmpty() &&
+                    cell.getFigure().getOwnerId() != gamer.gamerId) {
+                        eatingAims.push(cell);
+                        break;
+                }
+
+                if(!cell.getIsEmpty() &&
+                   cell.getFigure().getOwnerId() == gamer.gamerId) {
+                       break;
+                }
+            }
+        }
+
+        // Find aim cell to right
+        for (var column = startColumn; column <= 7; column++) {
+            var cell = chessBoard[startRow][column];
+
+            if(column != startColumn) {
+                if(!cell.getIsEmpty() &&
+                   cell.getFigure().getOwnerId() != gamer.gamerId) {
+                        eatingAims.push(cell);
+                        break;
+                }
+
+                if(!cell.getIsEmpty() &&
+                   cell.getFigure().getOwnerId() == gamer.gamerId) {
+                       break;
+                }
+            }
+        }
+
+        // Find aim cell to left
+        for (var column = startColumn; column >= 0; column--) {
+            var cell = chessBoard[startRow][column];
+
+            if(column != startColumn) {
+                if(!cell.getIsEmpty() &&
+                   cell.getFigure().getOwnerId() != gamer.gamerId) {
+                        eatingAims.push(cell);
+                        break;
+                }
+
+                if(!cell.getIsEmpty() &&
+                   cell.getFigure().getOwnerId() == gamer.gamerId) {
+                       break;
+                }
+            }
+        }
+
+        return eatingAims;
     };
 };
 
@@ -1354,7 +1645,7 @@ function King() {
 
     this._cssClass = "king-";
 
-    this.getAvailableStaps = function(chessArea) {
+    this.getAvailableStaps = function(chessBoard) {
         /**
         *   This method calculates available cells
         *   For selected king
@@ -1370,24 +1661,24 @@ function King() {
         // Find empty cells for king
         for(var ofsetRow = -1; ofsetRow <= 1; ofsetRow++) {
             if((startRow + ofsetRow >= 0) && (startRow + ofsetRow <= 7)) {
-                if(chessArea[startRow + ofsetRow][startColumn].getIsEmpty()) {
+                if(chessBoard[startRow + ofsetRow][startColumn].getIsEmpty()) {
                     availableCell.push(
-                        chessArea[startRow + ofsetRow][startColumn]
+                        chessBoard[startRow + ofsetRow][startColumn]
                     );
                 }
 
                 if(startColumn - 1 >= 0) {
-                    if(chessArea[startRow + ofsetRow][startColumn - 1].getIsEmpty()) {
+                    if(chessBoard[startRow + ofsetRow][startColumn - 1].getIsEmpty()) {
                         availableCell.push(
-                            chessArea[startRow + ofsetRow][startColumn - 1]
+                            chessBoard[startRow + ofsetRow][startColumn - 1]
                         );
                     }
                 }
 
                 if(startColumn + 1 <= 7) {
-                    if(chessArea[startRow + ofsetRow][startColumn + 1].getIsEmpty()) {
+                    if(chessBoard[startRow + ofsetRow][startColumn + 1].getIsEmpty()) {
                         availableCell.push(
-                            chessArea[startRow + ofsetRow][startColumn + 1]
+                            chessBoard[startRow + ofsetRow][startColumn + 1]
                         );
                     }
                 }
@@ -1406,5 +1697,45 @@ function King() {
         *   @param {array of array of Cell} chessBoard
         *   @returned {array of Cell} eatingAims
         */
+
+        var startRow = this._oldPosition.row;
+        var startColumn = this._oldPosition.column;
+        var possibleAims = [];
+        var eatingAims = [];
+
+        // Find empty cells for king
+        for(var ofsetRow = -1; ofsetRow <= 1; ofsetRow++) {
+            if((startRow + ofsetRow >= 0) && (startRow + ofsetRow <= 7)) {
+
+                if(!chessBoard[startRow + ofsetRow][startColumn].getIsEmpty()) {
+                    possibleAims.push(
+                        chessBoard[startRow + ofsetRow][startColumn]
+                    );
+                }
+
+                if(startColumn - 1 >= 0) {
+                    if(!chessBoard[startRow + ofsetRow][startColumn - 1].getIsEmpty()) {
+                        possibleAims.push(
+                            chessBoard[startRow + ofsetRow][startColumn - 1]
+                        );
+                    }
+                }
+
+                if(startColumn + 1 <= 7) {
+                    if(!chessBoard[startRow + ofsetRow][startColumn + 1].getIsEmpty()) {
+                        possibleAims.push(
+                            chessBoard[startRow + ofsetRow][startColumn + 1]
+                        );
+                    }
+                }
+            }
+            
+        }
+
+        eatingAims = possibleAims.filter(function(cell) {
+            return cell.getFigure().getOwnerId() != gamer.gamerId;
+        });
+
+        return eatingAims;
     };
 };
