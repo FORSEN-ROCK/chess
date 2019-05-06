@@ -2,21 +2,8 @@
 *   This script adds base game logics for html chess
 */
 
-/**
-*   Future
-*   Rename methods in class Figure
-*       getAvailableStps -> findAvailableStaps
-*       getEatingAims -> findEatingAims
-*   Define methods in class Figure
-*       getAvalibleStaps -> return this._availableSteps
-*       getEatingEatingAims -> return this._eatingAims
-*       getAllSteps -> return this._availableStaps + this._eatingAims
-*/
-
 (function(){
     $("#start").on("click", startGame);
-    //$(".figure").on("mousedown", gameControl);
-    //$("body").on("click", function(event) { console.log(event);});
 })();
 
 function startGame() {
@@ -41,6 +28,9 @@ function startGame() {
     // Set the first gamer
     document.currentGamer = document.gamers[0];
 
+    // Set flag of game over
+    document.isGameOver = false;
+
     $(".chess-place").on("click", function(event) {
         /**
         *   This listener catch click on new cell and handles game
@@ -51,6 +41,14 @@ function startGame() {
         var target = $(event.target);
         var selectedFigure = document.selectedFigure;
         var currentGamer = document.currentGamer;
+        var gamers = document.gamers;
+        var chessRows = document.chessBoard.rows;
+
+        // Check king is fine?
+        if(currentGamer.getIsKingScared(choseNextGamer(currentGamer),
+                                        chessRows)) {
+            console.log("The King is scared!");  
+        }
 
         // Moved figure without eating
         if(target.hasClass("chess-cell") &&
@@ -59,13 +57,14 @@ function startGame() {
             var newCell = document.chessBoard.getCell(target.attr("id"));
 
             var availableSteps = selectedFigure.getAvailableStaps(
-                                             document.chessBoard.rows
+                                                chessRows
             );
             var isMoved = selectedFigure.move(newCell, availableSteps);
 
             if(isMoved) {
                 selectedFigure.getNewPosition().putFigure(selectedFigure);
                 selectedFigure.goTo(newCell);
+
                 document.chessBoard.deactivateBoard();
                 document.chessBoard.deactivateAim();
             }
@@ -78,7 +77,6 @@ function startGame() {
 
             // At first get target figure and check figure owner
             var aimFigure = document.chessBoard.getFigure(target.attr("Id"));
-            console.log("aim -> " + aimFigure);
 
             // Is not current gamer owner?
             if(aimFigure != undefined && 
@@ -87,7 +85,7 @@ function startGame() {
                     var movedPosition = aimFigure.getOldPosition();
 
                     var eatingSteps = selectedFigure.getEatingAim(
-                                            document.chessBoard.rows,
+                                            chessRows,
                                             currentGamer
                     );
 
@@ -113,6 +111,8 @@ function startGame() {
                     });
 
                     selectedFigure.goTo(movedPosition);
+                    movedPosition.putFigure(selectedFigure);
+
                     document.chessBoard.deactivateBoard();
                     document.chessBoard.deactivateAim();
                 }                    
@@ -121,14 +121,19 @@ function startGame() {
 
         // Check end of the move
         var isMoveFinished = currentGamer.finishMove();
-        //console.log("isMoveFinished -> " + isMoveFinished);
 
         if(isMoveFinished) {
             currentGamer.move();
 
             // Give the other gamer move
-            choseNextGamer(currentGamer);
+            document.currentGamer = choseNextGamer(currentGamer);
             aimFigure = undefined;
+        }
+
+        if(gamers[0].getAvailableMove(chessRows) <= 0 ||
+           gamers[1].getAvailableMove(chessRows) <= 0) {
+               document.isGameOver = true;
+               alert("fwefwefwe");
         }
     });
 
@@ -136,9 +141,6 @@ function startGame() {
     document.gamers.map(function(gamer) {
         createFigureForGamer(gamer, document.chessBoard.rows)
     });
-
-    // The main game function
-    //game(document.gamers, document.chessBoard);
     
 };
 
@@ -147,14 +149,17 @@ function choseNextGamer(currentGamer) {
     *   This function chooses who must muves figures
     *   After current gamer
     *   @param {object} currentGamer
-    *   @return {nothing}
+    *   @return {object} otherGamer
     */
 
-    document.gamers.map(function(gamer) {
-        if(gamer.gamerId != currentGamer.gamerId)
-            document.currentGamer = gamer;
-    });
-    
+    var otherGamer;
+ 
+    for(var item = 0; item < document.gamers.length; item++) {
+        if(document.gamers[item].gamerId != currentGamer.gamerId)
+            otherGamer = document.gamers[item];
+    }
+
+    return otherGamer;
 };
 
 function createFigureForGamer(gamer, chessArea) {
@@ -234,62 +239,6 @@ function createFigureForGamer(gamer, chessArea) {
     });
 };
 
-function game(gamers, chessBoard) {
-    /**
-    *   This is the main game function
-    *   It starts up game loop and handles 
-    *   The player actions and controls 
-    *   The game rules and defindes the winner
-    *
-    *   @param {array} gamers is list of gamer 
-    *   @return {nothing}
-    */
-
-    while(gamers[0].getAvailableMove() > 0 &&
-          gamers[1].getAvailableMove() > 0) {
-
-        currentGamer = gamers[0];
-
-        // Set current gamer
-        document.carrentGamer = currentGamer;
-
-        while(!chessBoard.getIsChanged()) {
-            // Define which figure have chosen gamer
-            var chosedFigure = currentGamer.figures.filter(function(figure) {
-                if(figure.getIsChosed())
-                    return figure;
-            })[0];
-
-            console.log(chosedFigure);
-            if(false){//chosedFigure != undefined) {
-                // Define where can be to moved chosed figure
-                availableSteps = figure.getAvailableStaps();
-
-                // Define what can the figure eat
-                eatingAim = figure.getEatingAim();
-
-                // Paint all availabel staps for the figure
-                availableSteps.forEach(function(cell) {
-                    cell.showAvailability();
-                });
-
-                // Paint all eating aim for the figure
-                eatingAim.forEach(function(cell) {
-                    cell.showEdible();
-                });
-            }
-
-            // Checks chess board changes
-            chessBoard.calculateChanged();
-        }
-
-        // At the end of gamer move
-        gamers.forEach(function(gamer) {
-            gamer.calculateAvailableMove();
-            gamer.calculateIsKingScared();
-        });
-    }
-};
 
 // This function creates game area
 function transformCellToAreal() {
@@ -330,44 +279,65 @@ function Gamer(color) {
     this._countMove = 0;
     this.color = color;
     this.figures = [];
-    this._availablMove = 20;
-    this._isKingScared = false;
+    //this._availablMove = 20;
+    //this._isKingScared = false;
 
     this.getCountMove = function() {
         return this._countMove;
     };
 
-    this.getAvailableMove = function() {
-        return this._availablMove;
-    };
-
-    this.calculateAvailableMove = function() {
+    this.getAvailableMove = function(chessBoard) {
         /**
         *   In this method we have to calculate availabel moves
         *   for all player figures and save it in _availablMove
         *   @params {this} this current gamer
-        *   @return {nothing}
+        *   @param {array of row} chessBoard
+        *   @return {number} count of available moves
         */
 
         var countAvailableMove = 0;
 
-        this.figures.forEach(function(figure) {
-            countAvailableMove += figure.getAvailableStaps(document.chessBoard.rows).length;
-        });
+        if(this.figures.length > 0) {
+            this.figures.forEach(function(figure) {
+            countAvailableMove += figure.getAvailableStaps(chessBoard).length;
+            });
+        }
 
-        this._availablMove = countAvailableMove;
+        //this._availablMove = countAvailableMove;
+        return countAvailableMove;
     };
 
-    this.calculateIsKingScared = function() {
+    this.getIsKingScared = function(otherGamer, chessBoard) {
         /**
         *   This checks dangers for player king
         *   @param {this} current gamer
-        *   @return {nothing}
+        *   @param {object} otherGamer
+        *   @param {array of rows} chessBoard
+        *   @return {boolean} isScared
         */
-    };
 
-    this.getIsKingScared = function() {
-        return this._isKingScared;
+        var allConcurentFigureMoves = [];
+        var movesToKing = [];
+        var kingIsScared = false;
+
+        otherGamer.figures.map(function(figure) {
+            allConcurentFigureMoves.push(figure.getEatingAim(
+                                                    chessBoard,
+                                                    otherGamer
+            ));
+        });
+
+        allConcurentFigureMoves.map(function(figureMoves) {
+            for(var move = 0; move < figureMoves.length; move++) {
+                if(figureMoves[move].getFigure().getCssClass() == "king-") 
+                    movesToKing.push(figureMoves[move]);
+            }
+        });
+
+        if(movesToKing.length > 0)
+            kingIsScared = true;
+
+        return kingIsScared;
     };
 
     this.move = function() {
@@ -402,13 +372,11 @@ function Gamer(color) {
 
         // Find moved figure
         var movedFigure = this.figures.filter(function(figure) {
-            //console.log("figureId -> " + figure.getFigureId() + " isChangePosition -> " + figure.isChangePosition());
             return figure.isChangePosition();
         });
 
-        console.log("movedFigure -> " + movedFigure);
         if(movedFigure.length > 0) {
-            movedFigure[0].saveMove();
+            movedFigure[0].saveMove(this);
             isMoveFinished = true;
         }
 
@@ -625,6 +593,36 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
     this._direction = gamerDirection;
     this._isAim = false;
 
+    this.getColor = function() {
+        /**
+        *   This method returns this figure color
+        *   @param {this} current figure
+        *   @return {string} _color
+        */
+
+        return this._color;
+    };
+
+    this.getCssClass = function() {
+        /** 
+        *   This method returns name of css class
+        *   @param {this} current figure
+        *   @return {string} className
+        */
+
+        return this._cssClass;
+    };
+
+    this.getDirection = function() {
+        /**
+        *   This method returns this figure direction
+        *   @param {this} current figure
+        *   @return {number} current direction
+        */
+
+        return this._direction;
+    };
+
     this.getIsChosed = function() {
         /**
         *   This mithod return _isChosed
@@ -729,10 +727,11 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
         return isMoved;
     };
 
-    this.saveMove = function() {
+    this.saveMove = function(gamer) {
         /**
         *   This method exchange value of _oldPosition
         *   @param {this} current figure
+        *   @param {object} gamer
         *   @return {nothing}
         */
         this._oldPosition = this._newPosition;
@@ -858,7 +857,10 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
         // Delete figure in interface
         $("#" + this.getFigureId()).remove();
         
-        // Clear positions 
+        // Clear positions
+        this._oldPosition.takeFigure();
+        this._newPosition.takeFigure();
+
         this._oldPosition = null;
         this._newPosition = null;
     };
@@ -951,9 +953,46 @@ function Pawn() {
         return eatingAims;
     };
 
-    this.saveMove = function() {
+    this.saveMove = function(gamer) {
+        /**
+        *   This method is extention for base method of figure
+        *   This is special method for Pawn
+        *   @param {this} current pawn
+        *   @param {object} gamer
+        *   @return {nothing}
+        */
+
         baseSaveMove.call(this);
         this._isFirstStep = false;
+
+        // Check new position and this pawn stand
+        // On the last row, it must turn into qeen
+        var newPosition = this.getNewPosition()
+
+        if((newPosition.row == 7 && this.getDirection() > 0) ||
+            newPosition.row == 0 && this.getDirection() < 0) {
+
+            var self = this;
+            var newLive = new Queen(self.getOwnerId(),
+                                    self.getNewPosition(),
+                                    self.getColor(),
+                                    self.getDirection());
+
+            // Delete current pawn
+            gamer.figures = gamer.figures.filter(function(figure) {
+                   return figure.getFigureId() != self.getFigureId();
+            });
+
+            self.die();
+
+            // add qeen to gamer figures
+            gamer.figures.push(newLive);
+
+            // Show new qeen in interface
+            newLive.show("#" + newPosition.getId());
+            newLive.saveMove(gamer);
+            
+        }
     };
 
 };
@@ -1514,6 +1553,9 @@ function Queen() {
                    cell.getFigure().getOwnerId() != gamer.gamerId) {
                         eatingAims.push(chessBoard[row][leftColumn]);
                         isNotFoundLeftToBottom = false;
+                } else if(!cell.getIsEmpty() &&
+                          cell.getFigure().getOwnerId() == gamer.gamerId) {
+                    isNotFoundLeftToBottom = false;
                 }
             }
 
@@ -1525,6 +1567,9 @@ function Queen() {
                    cell.getFigure().getOwnerId() != gamer.gamerId) {
                         eatingAims.push(chessBoard[row][rightColumn]);
                         isNotFoundRightToBottom = false;
+                } else if(!cell.getIsEmpty() &&
+                          cell.getFigure().getOwnerId() == gamer.gamerId) {
+                    isNotFoundRightToBottom = false;
                 }
             }
 
@@ -1546,6 +1591,9 @@ function Queen() {
                    cell.getFigure().getOwnerId() != gamer.gamerId) {
                         eatingAims.push(cell);
                         isNotFoundLeftToTop = false;
+                } else if(!cell.getIsEmpty() &&
+                          cell.getFigure().getOwnerId() == gamer.gamerId) {
+                    isNotFoundLeftToTop = false;
                 }
             }
 
@@ -1557,6 +1605,9 @@ function Queen() {
                    cell.getFigure().getOwnerId() != gamer.gamerId) {
                         eatingAims.push(cell);
                         isNotFoundRightToTop = false;
+                } else if (!cell.getIsEmpty() &&
+                           cell.getFigure().getOwnerId() == gamer.gamerId) {
+                    isNotFoundRightToTop = false;
                 }
             }
 
