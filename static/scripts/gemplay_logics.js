@@ -45,14 +45,24 @@ function startGame() {
         var chessRows = document.chessBoard.rows;
 
         // Check king is fine?
-        if(currentGamer.getIsKingScared(choseNextGamer(currentGamer),
-                                        chessRows)) {
-            console.log("The King is scared!");  
+
+        var isKingScared = currentGamer.getIsKingScared(
+                                    choseNextGamer(currentGamer),
+                                    chessRows
+        );
+
+        if(isKingScared) {
+            console.log("The King is scared!");
+            var tt = currentGamer.getEscStaps(
+                                chessRows,
+                                choseNextGamer(currentGamer)
+            );
         }
 
         // Moved figure without eating
         if(target.hasClass("chess-cell") &&
-           selectedFigure != undefined){
+           selectedFigure != undefined && 
+           !isKingScared){
 
             var newCell = document.chessBoard.getCell(target.attr("id"));
 
@@ -73,7 +83,8 @@ function startGame() {
         // Moved figure with eating
         if(target.hasClass("figure") &&
            selectedFigure != undefined &&
-           target.attr("id") != selectedFigure.getFigureId()) {
+           target.attr("id") != selectedFigure.getFigureId() &&
+           !isKingScared) {
 
             // At first get target figure and check figure owner
             var aimFigure = document.chessBoard.getFigure(target.attr("Id"));
@@ -227,6 +238,9 @@ function createFigureForGamer(gamer, chessArea) {
             // Create king
             itemFigure = new King(gamer.gamerId, cell,
                                   gamer.color, gamer.getDirection());
+
+            // Save king for player
+            gamer.setKing(itemFigure);
         }
 
         if(itemFigure != undefined) {
@@ -278,12 +292,74 @@ function Gamer(color) {
     this.gamerId = Math.floor(Math.random()*10000);
     this._countMove = 0;
     this.color = color;
+    this._king = undefined;
     this.figures = [];
     //this._availablMove = 20;
     //this._isKingScared = false;
 
     this.getCountMove = function() {
         return this._countMove;
+    };
+
+    this.getKing = function() {
+        /**
+        *   This method returns king of player
+        *   @param {this} current gamer
+        *   @return {object} king
+        */
+
+        return this._king;
+    };
+
+    this.setKing = function(figureOfKing) {
+        /**
+        *   This method checks _kind and set it
+        *   If it's nessosory
+        *   @param {this} current gamer
+        *   @param {object} player king
+        *   @return {boolean} isSetKing
+        */
+
+        var isSetKing = false;
+
+        if(this._king == undefined && figureOfKing != undefined) {
+            this._king = figureOfKing;
+            isSetKing = true;
+        }
+
+        return isSetKing;
+    };
+
+    this.getEscStaps = function(chessBoard, otherGamer) {
+        /**
+        *   This method serches how can king be save
+        *   @param {this} current gamer
+        *   @param {array of row} chessBoard
+        *   @param {object} otherGamer
+        *   @return {object} saveFigures
+        */
+
+        var saveFigures = [];
+        var attakingFigures = [];
+
+        // Find the attaking figure for gamer king
+        otherGamer.figures.map(function(figure) {
+            var eatingSteps = figure.getEatingAim(chessBoard, 
+                                                  otherGamer);
+            console.log(eatingSteps);
+
+            for(var aim = 0; aim < eatingSteps.length; aim++) {
+
+                // Find figure which can eat the king    
+                if(eatingSteps[aim].getFigure().getCssClass() == "king-")
+                    attakingFigures.push(figure);
+            }
+        });
+        //console.log(attakingFigures);
+
+        // Find how can we stop it
+
+        return saveFigures;
     };
 
     this.getAvailableMove = function(chessBoard) {
@@ -316,6 +392,7 @@ function Gamer(color) {
         *   @return {boolean} isScared
         */
 
+        console.log(this);
         var allConcurentFigureMoves = [];
         var movesToKing = [];
         var kingIsScared = false;
@@ -329,7 +406,8 @@ function Gamer(color) {
 
         allConcurentFigureMoves.map(function(figureMoves) {
             for(var move = 0; move < figureMoves.length; move++) {
-                if(figureMoves[move].getFigure().getCssClass() == "king-") 
+                if(figureMoves[move].getFigure().getCssClass() == "king-" &&
+                   figureMoves[move].getFigure().getOwnerId() != this.gamerId) 
                     movesToKing.push(figureMoves[move]);
             }
         });
