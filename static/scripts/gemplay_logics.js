@@ -57,6 +57,7 @@ function startGame() {
                                 chessRows,
                                 choseNextGamer(currentGamer)
             );
+            console.log(tt);
         }
 
         // Moved figure without eating
@@ -336,17 +337,17 @@ function Gamer(color) {
         *   @param {this} current gamer
         *   @param {array of row} chessBoard
         *   @param {object} otherGamer
-        *   @return {object} saveFigures
+        *   @return {array of objects} saveFigures
         */
 
         var saveFigures = [];
         var attakingFigures = [];
+        var self = this;
 
         // Find the attaking figure for gamer king
         otherGamer.figures.map(function(figure) {
             var eatingSteps = figure.getEatingAim(chessBoard, 
                                                   otherGamer);
-            console.log(eatingSteps);
 
             for(var aim = 0; aim < eatingSteps.length; aim++) {
 
@@ -355,9 +356,100 @@ function Gamer(color) {
                     attakingFigures.push(figure);
             }
         });
-        //console.log(attakingFigures);
 
         // Find how can we stop it
+        attakingFigures.map(function(angryFigure) {
+            var angryEatingSteps = angryFigure.getEatingAim(
+                                                        chessBoard,
+                                                        otherGamer
+            );
+            var angryMovingSteps = angryFigure.getAvailableStaps(
+                                                        chessBoard
+            );
+            var angryTarget = angryFigure.getOldPosition();
+
+            // Check how will the angry figure be moved to the king
+            /*angryEatingSteps = angryEatingSteps.filter(function(eatingStep) {
+                var isImpotantStep = false;
+
+                if(eatingStep.getFigure().getCssClass() == "king-") {
+
+                    var target = self.getKing().getOldPosition();
+                    var attacking = angryFigure.getOldPosition();
+
+                    // Find in the same row
+                    if((target.row == attacking.row) &&
+                       ((eatingStep.column > target.column && eatingStep.column < attacking.column) ||
+                       (eatingStep.column > attacking.column && eatingStep.column < target.column))) {
+                            isImpotantStep = true;
+                    }
+
+                    // Find in the same column
+                    if((target.column == attacking.column) &&
+                        ((eatingStep.row > target.row && eatingStep.row < attacking.row) ||
+                        (eatingStep.row > attacking.row && eatingStep.row < target.row))) {
+                            isImpotantStep = true;
+                    }
+
+                    if(target.column > attacking.column) {
+                    }
+
+                    if(target.column < attacking.column) {
+                    }
+                }
+
+                return isImpotantStep;
+            });
+            console.log(angryEatingSteps);*/
+            
+            self.figures.map(function(saveFigure) {
+                var saveEatingSteps = saveFigure.getEatingAim(
+                                                        chessBoard,
+                                                        self
+                );
+                var saveMovingSteps = saveFigure.getAvailableStaps(
+                                                        chessBoard
+                );
+
+                // Check can we eat angry figure
+                for(var step = 0; step < saveEatingSteps.length; step++) {
+                    if(saveEatingSteps[step].getId() == angryTarget.getId())
+                        saveFigures.push(saveFigure);
+                }
+
+                // Check can we stop moving 
+                saveMovingSteps.map(function(move) {
+
+                    for(var step = 0; step < angryEatingSteps.length; step++) {
+
+                        if(angryEatingSteps[step].getId() == move.getId())
+                            saveFigures.push(saveFigure);
+                    }
+
+                    for(var step = 0; step < angryMovingSteps.length; step++) {
+
+                        if(angryMovingSteps[step].getId() == move.getId())
+                            saveFigures.push(saveFigure);
+                    }
+                });
+            });
+        });
+
+        var counter = {};
+
+        saveFigures = saveFigures.filter(function(item) {
+            // Make unique array of figures
+            var isUnique = false;
+
+            if(item) {
+                if(counter[item.getFigureId()] == undefined) {
+                    counter[item.getFigureId()] = 1;
+                    isUnique = true;
+                }
+            }
+
+            return isUnique;
+        });
 
         return saveFigures;
     };
