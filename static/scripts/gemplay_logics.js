@@ -366,41 +366,39 @@ function Gamer(color) {
             var angryMovingSteps = angryFigure.getAvailableStaps(
                                                         chessBoard
             );
-            var angryTarget = angryFigure.getOldPosition();
+            var attacking = angryFigure.getOldPosition();
+            console.log(angryMovingSteps);
 
             // Check how will the angry figure be moved to the king
-            /*angryEatingSteps = angryEatingSteps.filter(function(eatingStep) {
+            angryMovingSteps = angryMovingSteps.filter(function(step) {
                 var isImpotantStep = false;
 
-                if(eatingStep.getFigure().getCssClass() == "king-") {
+                var target = self.getKing().getOldPosition();
+                //var attacking = angryFigure.getOldPosition();
 
-                    var target = self.getKing().getOldPosition();
-                    var attacking = angryFigure.getOldPosition();
+                // Find in the same row
+                if((target.row == attacking.row) &&
+                   ((step.column > target.column && step.column < attacking.column) ||
+                    (step.column > attacking.column && step.column < target.column))) {
+                        isImpotantStep = true;
+                }
 
-                    // Find in the same row
-                    if((target.row == attacking.row) &&
-                       ((eatingStep.column > target.column && eatingStep.column < attacking.column) ||
-                       (eatingStep.column > attacking.column && eatingStep.column < target.column))) {
-                            isImpotantStep = true;
-                    }
+                // Find in the same column
+                if((target.column == attacking.column) &&
+                    ((step.row > target.row && step.row < attacking.row) ||
+                     (step.row > attacking.row && step.row < target.row))) {
+                        isImpotantStep = true;
+                }
 
-                    // Find in the same column
-                    if((target.column == attacking.column) &&
-                        ((eatingStep.row > target.row && eatingStep.row < attacking.row) ||
-                        (eatingStep.row > attacking.row && eatingStep.row < target.row))) {
-                            isImpotantStep = true;
-                    }
+                if(target.column > attacking.column) {
+                }
 
-                    if(target.column > attacking.column) {
-                    }
-
-                    if(target.column < attacking.column) {
-                    }
+                if(target.column < attacking.column) {
                 }
 
                 return isImpotantStep;
             });
-            console.log(angryEatingSteps);*/
+            console.log(angryMovingSteps);
             
             self.figures.map(function(saveFigure) {
                 var saveEatingSteps = saveFigure.getEatingAim(
@@ -413,7 +411,7 @@ function Gamer(color) {
 
                 // Check can we eat angry figure
                 for(var step = 0; step < saveEatingSteps.length; step++) {
-                    if(saveEatingSteps[step].getId() == angryTarget.getId())
+                    if(saveEatingSteps[step].getId() == attacking.getId())
                         saveFigures.push(saveFigure);
                 }
 
