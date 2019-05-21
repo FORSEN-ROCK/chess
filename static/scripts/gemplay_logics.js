@@ -31,123 +31,7 @@ function startGame() {
     // Set flag of game over
     document.isGameOver = false;
 
-    $(".chess-place").on("click", function(event) {
-        /**
-        *   This listener catch click on new cell and handles game
-        *   @param {object} event
-        *   @return {nothing}
-        */
-
-        var target = $(event.target);
-        var selectedFigure = document.selectedFigure;
-        var currentGamer = document.currentGamer;
-        var gamers = document.gamers;
-        var chessRows = document.chessBoard.rows;
-
-        // Check king is fine?
-
-        var isKingScared = currentGamer.getIsKingScared(
-                                    choseNextGamer(currentGamer),
-                                    chessRows
-        );
-
-        if(isKingScared) {
-            console.log("The King is scared!");
-            var tt = currentGamer.getEscStaps(
-                                chessRows,
-                                choseNextGamer(currentGamer)
-            );
-            console.log(tt);
-        }
-
-        // Moved figure without eating
-        if(target.hasClass("chess-cell") &&
-           selectedFigure != undefined && 
-           !isKingScared){
-
-            var newCell = document.chessBoard.getCell(target.attr("id"));
-
-            var availableSteps = selectedFigure.getAvailableStaps(
-                                                chessRows
-            );
-            var isMoved = selectedFigure.move(newCell, availableSteps);
-
-            if(isMoved) {
-                selectedFigure.getNewPosition().putFigure(selectedFigure);
-                selectedFigure.goTo(newCell);
-
-                document.chessBoard.deactivateBoard();
-                document.chessBoard.deactivateAim();
-            }
-        }
-
-        // Moved figure with eating
-        if(target.hasClass("figure") &&
-           selectedFigure != undefined &&
-           target.attr("id") != selectedFigure.getFigureId() &&
-           !isKingScared) {
-
-            // At first get target figure and check figure owner
-            var aimFigure = document.chessBoard.getFigure(target.attr("Id"));
-
-            // Is not current gamer owner?
-            if(aimFigure != undefined && 
-               aimFigure.getOwnerId() != currentGamer.gamerId) {
-
-                    var movedPosition = aimFigure.getOldPosition();
-
-                    var eatingSteps = selectedFigure.getEatingAim(
-                                            chessRows,
-                                            currentGamer
-                    );
-
-                    var isMoved = selectedFigure.move(
-                                        movedPosition,
-                                        eatingSteps
-                    );
-
-                // Can we move figure there?
-                if(isMoved) {
-                    aimFigure.die();
-
-                    //Delete figure for gamer
-                    document.gamers.map(function(gamer) {
-                        gamer.figures = gamer.figures.filter(function(figure) {
-                            var isNotDeleted = (
-                                    figure.getFigureId() != 
-                                    aimFigure.getFigureId()
-                            );
-
-                            return isNotDeleted;
-                        });
-                    });
-
-                    selectedFigure.goTo(movedPosition);
-                    movedPosition.putFigure(selectedFigure);
-
-                    document.chessBoard.deactivateBoard();
-                    document.chessBoard.deactivateAim();
-                }                    
-            }
-        }
-
-        // Check end of the move
-        var isMoveFinished = currentGamer.finishMove();
-
-        if(isMoveFinished) {
-            currentGamer.move();
-
-            // Give the other gamer move
-            document.currentGamer = choseNextGamer(currentGamer);
-            aimFigure = undefined;
-        }
-
-        if(gamers[0].getAvailableMove(chessRows) <= 0 ||
-           gamers[1].getAvailableMove(chessRows) <= 0) {
-               document.isGameOver = true;
-               alert("fwefwefwe");
-        }
-    });
+    $(".chess-place").on("click", game);
 
     // Create the chess figures for forEach gamers
     document.gamers.map(function(gamer) {
@@ -254,6 +138,180 @@ function createFigureForGamer(gamer, chessArea) {
     });
 };
 
+function game(event) {
+    /**
+    *   This function is listener catch click on new cell
+    *   And handles game events
+    *   @param {object} event
+    *   @return {nothing}
+    */
+
+    var target = $(event.target);
+    var selectedFigure = document.selectedFigure;
+    var currentGamer = document.currentGamer;
+    var gamers = document.gamers;
+    var chessRows = document.chessBoard.rows;
+
+    // Check king is not scared?
+    var isKingScared = currentGamer.getIsKingScared(
+                                choseNextGamer(currentGamer),
+                                chessRows
+    );
+
+    if(isKingScared) {
+        console.log("The King is scared!");
+
+        var saveFigures = currentGamer.getEscSteps(
+                                chessRows,
+                                choseNextGamer(currentGamer)
+        );
+
+        console.log(saveFigures);
+    }
+
+    if(isKingScared && saveFigures.length == 0) {
+
+        // Current gamer is lost
+        currentGamer.setIsCheckmate(true);
+        document.isGameOver = true;
+
+        alert("You are lost!");
+    }
+
+    var isGameOver = document.isGameOver;
+
+    // Chech can we move current figure if king is scared
+    if(isKingScared && selectedFigure != undefined) {
+        var isFound = false;
+
+        for(var figure = 0; figure < saveFigures.length; figure++) {
+            if(saveFigures[figure].getFigureId() ==
+               selectedFigure.getFigureId()) {
+                    isFound = true;
+                    break;
+            }
+        }
+
+        if(!isFound) {
+            document.selectedFigure = undefined;
+            selectedFigure = undefined;
+        }
+    }
+
+    // Moved figure without eating
+    if(target.hasClass("chess-cell") &&
+       selectedFigure != undefined &&
+       !isGameOver){
+
+        var newCell = document.chessBoard.getCell(target.attr("id"));
+
+        var availableSteps = selectedFigure.getAvailableSteps(
+                                                chessRows
+        );
+        var isMoved = selectedFigure.move(newCell, availableSteps);
+
+        if(isMoved) {
+            selectedFigure.getNewPosition().putFigure(selectedFigure);
+            selectedFigure.goTo(newCell);
+
+            document.chessBoard.deactivateBoard();
+            document.chessBoard.deactivateAim();
+        }
+    }
+
+    // Moved figure with eating
+    if(target.hasClass("figure") &&
+        selectedFigure != undefined &&
+        target.attr("id") != selectedFigure.getFigureId() &&
+        !isGameOver) {
+
+        // At first get target figure and check figure owner
+        var aimFigure = document.chessBoard.getFigure(target.attr("Id"));
+
+        // Is not current gamer owner?
+        if(aimFigure != undefined && 
+           aimFigure.getOwnerId() != currentGamer.gamerId) {
+
+                var movedPosition = aimFigure.getOldPosition();
+
+                var eatingSteps = selectedFigure.getEatingAim(
+                                            chessRows,
+                                            currentGamer
+                );
+
+                var isMoved = selectedFigure.move(
+                                        movedPosition,
+                                        eatingSteps
+                );
+
+            // Can we move figure there?
+            if(isMoved) {
+                aimFigure.die();
+
+                //Delete figure for gamer
+                document.gamers.map(function(gamer) {
+                    gamer.figures = gamer.figures.filter(function(figure) {
+                        var isNotDeleted = (
+                                figure.getFigureId() != 
+                                aimFigure.getFigureId()
+                        );
+
+                        return isNotDeleted;
+                    });
+                });
+
+                selectedFigure.goTo(movedPosition);
+                movedPosition.putFigure(selectedFigure);
+
+                document.chessBoard.deactivateBoard();
+                document.chessBoard.deactivateAim();
+            }                    
+        }
+    }
+
+    // Move with Castling
+    var isSelectedKing = selectedFigure.getCssClass() == "king-";
+
+    if(!isGameOver && isSelectedKing && !isKingScared &&
+       target.hasClass("figure") && currentGamer.getIsCastlingAvalaible()) {
+
+            var figure = document.chessBoard.getFigure(target.attr("Id"));
+            var otherGamer = choseNextGamer(currentGamer);
+
+            var isFigureRook = figure.getCssClass() == "rook-";
+            var isNotKingMoved = selectedFigure.getIsNotMoved();
+
+            if(isFigureRook) {
+                var isNotRookMoved = figure.getIsNotMoved();
+            }
+
+            if(isFigureRook && isNotRookMoved && isNotKingMoved) {
+                //var isSafePath = false;
+                //otherGamer.figures.map(function(figure) {
+                //    var steps = figure.getAvailableSteps(chessRows);
+                    
+                //});
+            }
+    }
+
+    // Check end of the move
+    var isMoveFinished = currentGamer.finishMove();
+
+    if(isMoveFinished) {
+        currentGamer.move();
+
+        // Give the other gamer move
+        document.currentGamer = choseNextGamer(currentGamer);
+        aimFigure = undefined;
+    }
+
+    if(gamers[0].getAvailableMove(chessRows) <= 0 ||
+       gamers[1].getAvailableMove(chessRows) <= 0) {
+            document.isGameOver = true;
+            alert("fwefwefwe");
+    }
+}
+
 
 // This function creates game area
 function transformCellToAreal() {
@@ -295,11 +353,53 @@ function Gamer(color) {
     this.color = color;
     this._king = undefined;
     this.figures = [];
-    //this._availablMove = 20;
-    //this._isKingScared = false;
+    this._isCastlingAvalaible = true;
+    this._isCheckmate = false;
 
     this.getCountMove = function() {
+        /**
+        *   This method returns private property
+        *   @param {this} current gamer
+        *   @return {number} _countMove
+        */
+
         return this._countMove;
+    };
+
+    this.getIsCheckmate = function() {
+        /**
+        *   This method retuthis}rns private property
+        *   @param {this} current gamer
+        *   @return {boolean} _isCheckmate
+        */
+
+        return this._isCheckmate;
+    };
+
+    this.setIsCheckmate = function(isCheckmate) {
+        /**
+        *   This method sets private property
+        *   @param {boolean} isCheckmate
+        *   @return {boolean} isSeted
+        */
+
+        var isSeted = false;
+
+        if(!this._isCheckmate && isCheckmate) 
+            this._isCheckmate = isCheckmate;
+
+        return isSeted;
+    };
+
+    this.getIsCastlingAvalaible = function() {
+        /**
+        *   This method returs private property
+        *   _isCastlingAvalaible
+        *   @param {this} current gamer
+        *   @return {boolean} _isCastlingAvalaible
+        */
+
+        return this._isCastlingAvalaible;
     };
 
     this.getKing = function() {
@@ -331,7 +431,7 @@ function Gamer(color) {
         return isSetKing;
     };
 
-    this.getEscStaps = function(chessBoard, otherGamer) {
+    this.getEscSteps = function(chessBoard, otherGamer) {
         /**
         *   This method serches how can king be save
         *   @param {this} current gamer
@@ -363,76 +463,142 @@ function Gamer(color) {
                                                         chessBoard,
                                                         otherGamer
             );
-            var angryMovingSteps = angryFigure.getAvailableStaps(
+            var angryMovingSteps = angryFigure.getAvailableSteps(
                                                         chessBoard
             );
             var attacking = angryFigure.getOldPosition();
-            console.log(angryMovingSteps);
 
             // Check how will the angry figure be moved to the king
             angryMovingSteps = angryMovingSteps.filter(function(step) {
+                // Flag for filter
                 var isImpotantStep = false;
 
                 var target = self.getKing().getOldPosition();
-                //var attacking = angryFigure.getOldPosition();
+
+                // Boolean varible for target and attacking position
+                var targetIsLeft = target.column < attacking.column;
+                var targetIsRight = target.column > attacking.column;
+                var targetIsBottom = target.row < attacking.row;
+                var targetIsTop = target.row > attacking.row;
+
+                // Boolean varible for steps regarding 
+                // target and attacking position
+                var stepIsLeftRegardingTarget = (
+                            step.column > attacking.column &&
+                            step.column < target.column
+                );
+
+                var stepIsRightRegardingTarget = (
+                            step.column > target.column &&
+                            step.column < attacking.column
+                );
+
+                var stepIsBottomRegardingTarget = (
+                            step.row > target.row &&
+                            step.row < attacking.row
+                );
+
+                var stepIsTopRegardingTarget = (
+                            step.row > attacking.row &&
+                            step.row < target.row
+                );
 
                 // Find in the same row
                 if((target.row == attacking.row) &&
-                   ((step.column > target.column && step.column < attacking.column) ||
-                    (step.column > attacking.column && step.column < target.column))) {
+                   (step.row == target.row) &&
+                   (stepIsRightRegardingTarget ||
+                    stepIsLeftRegardingTarget)) {
                         isImpotantStep = true;
                 }
 
                 // Find in the same column
                 if((target.column == attacking.column) &&
-                    ((step.row > target.row && step.row < attacking.row) ||
-                     (step.row > attacking.row && step.row < target.row))) {
+                    (target.column == step.column) &&
+                    (stepIsBottomRegardingTarget ||
+                     stepIsTopRegardingTarget)) {
                         isImpotantStep = true;
                 }
 
-                if(target.column > attacking.column) {
+                // Find on right from fing
+                if((targetIsLeft && targetIsBottom &&
+                    stepIsRightRegardingTarget &&
+                    stepIsBottomRegardingTarget) ||
+                   (targetIsLeft && targetIsTop &&
+                    stepIsRightRegardingTarget &&
+                    stepIsTopRegardingTarget)) {
+                       isImpotantStep = true;
                 }
 
-                if(target.column < attacking.column) {
+                // Find on left from king
+                if((targetIsRight && targetIsBottom && 
+                    stepIsLeftRegardingTarget &&
+                    stepIsBottomRegardingTarget) ||
+                   (targetIsRight && targetIsTop &&
+                    stepIsLeftRegardingTarget &&
+                    stepIsTopRegardingTarget)) {
+                        isImpotantStep = true;
                 }
 
                 return isImpotantStep;
             });
-            console.log(angryMovingSteps);
             
             self.figures.map(function(saveFigure) {
-                var saveEatingSteps = saveFigure.getEatingAim(
-                                                        chessBoard,
-                                                        self
-                );
-                var saveMovingSteps = saveFigure.getAvailableStaps(
-                                                        chessBoard
-                );
 
-                // Check can we eat angry figure
-                for(var step = 0; step < saveEatingSteps.length; step++) {
-                    if(saveEatingSteps[step].getId() == attacking.getId())
-                        saveFigures.push(saveFigure);
+                if(saveFigure.getCssClass() != "king-") {
+                    var saveEatingSteps = saveFigure.getEatingAim(
+                                                            chessBoard,
+                                                            self
+                    );
+                    var saveMovingSteps = saveFigure.getAvailableSteps(
+                                                            chessBoard
+                    );
+
+                    // Check can we eat angry figure
+                    for(var step = 0; step < saveEatingSteps.length; step++) {
+
+                        if(saveEatingSteps[step].getId() == attacking.getId())
+                            saveFigures.push(saveFigure);
+                    }
+
+                    // Check can we stop moving 
+                    saveMovingSteps.map(function(move) {
+
+                        for(var step = 0; step < angryEatingSteps.length; step++) {
+
+                            if(angryEatingSteps[step].getId() == move.getId())
+                                saveFigures.push(saveFigure);
+                        }
+
+                        for(var step = 0; step < angryMovingSteps.length; step++) {
+
+                            if(angryMovingSteps[step].getId() == move.getId())
+                                saveFigures.push(saveFigure);
+                        }
+                    });
                 }
-
-                // Check can we stop moving 
-                saveMovingSteps.map(function(move) {
-
-                    for(var step = 0; step < angryEatingSteps.length; step++) {
-
-                        if(angryEatingSteps[step].getId() == move.getId())
-                            saveFigures.push(saveFigure);
-                    }
-
-                    for(var step = 0; step < angryMovingSteps.length; step++) {
-
-                        if(angryMovingSteps[step].getId() == move.getId())
-                            saveFigures.push(saveFigure);
-                    }
-                });
             });
         });
 
+        // Chech the king moves 
+        var kingMoves = self.getKing().getAvailableSteps(chessBoard);
+        var countDangerous = 0;
+
+        otherGamer.figures.map(function(angryFigure) {
+            var angryMoves = angryMoves.getAvailableSteps(chessBoard);
+
+            kingMoves.map(function(step) {
+                for(var angryStep = 0; angryStep < angryMoves.length; angryMoves++) {
+                    if(step.getId() = angryMoves[angryStep].getId())
+                        countDangerous++;
+                }
+            });
+        });
+
+        if(countDangerous != kingMoves.lenght) {
+            saveFigures.push(self.getKing())
+        }
+
+        // Delete dublecation figures
         var counter = {};
 
         saveFigures = saveFigures.filter(function(item) {
@@ -465,7 +631,7 @@ function Gamer(color) {
 
         if(this.figures.length > 0) {
             this.figures.forEach(function(figure) {
-            countAvailableMove += figure.getAvailableStaps(chessBoard).length;
+            countAvailableMove += figure.getAvailableSteps(chessBoard).length;
             });
         }
 
@@ -482,7 +648,7 @@ function Gamer(color) {
         *   @return {boolean} isScared
         */
 
-        console.log(this);
+        //console.log(this);
         var allConcurentFigureMoves = [];
         var movesToKing = [];
         var kingIsScared = false;
@@ -549,6 +715,13 @@ function Gamer(color) {
         }
 
         return isMoveFinished;
+    };
+
+    this.checkCellForAttack = function(start, end) {
+        /**
+        *   This method checks can figures of current gamer
+        *   Go there
+        */
     };
 }
 
@@ -927,7 +1100,7 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
                         if(document.selectedFigure == self) {
 
                             // Define where can be to moved chosed figure
-                            var availableSteps = self.getAvailableStaps(
+                            var availableSteps = self.getAvailableSteps(
                                                     document.chessBoard.rows
                             );
 
@@ -1044,7 +1217,7 @@ function Pawn() {
     this._cssClass = "pawn-";
 
 
-    this.getAvailableStaps = function(chessArea) {
+    this.getAvailableSteps = function(chessArea) {
         /**
         *   This method calculates available cells
         *   For selected pawn
@@ -1169,8 +1342,20 @@ function Rook() {
     Figure.apply(this, arguments);
 
     this._cssClass = "rook-";
+    this._isNotMoved = true;
 
-    this.getAvailableStaps = function(chessBoard) {
+
+    this.getIsNotMoved = function() {
+        /**
+        *   This method returns private property
+        *   @param {this} current figure
+        *   @return {boolean} _isNotMoved
+        */
+
+        return this._isNotMoved;
+    };
+
+    this.getAvailableSteps = function(chessBoard) {
         /**
         *   This method calculates available cells
         *   For selected rook
@@ -1301,6 +1486,19 @@ function Rook() {
 
         return eatingAims;
     };
+
+    this.saveMove = function(gamer) {
+        /**
+        *   This method is extention for base method of figure
+        *   This is special method for Rock
+        *   @param {this} current rock
+        *   @param {object} gamer
+        *   @return {nothing}
+        */
+
+        baseSaveMove.call(this);
+        this._isNotMoved = false;
+    };
 };
 
 function Horse() {
@@ -1308,7 +1506,7 @@ function Horse() {
 
     this._cssClass = "horse-";
 
-    this.getAvailableStaps = function(chessBoard) {
+    this.getAvailableSteps = function(chessBoard) {
         /**
         *   This method calculates available cells
         *   For selected horse
@@ -1426,7 +1624,7 @@ function Elephant() {
 
     this._cssClass = "elephant-";
 
-    this.getAvailableStaps = function(chessBoard) {
+    this.getAvailableSteps = function(chessBoard) {
         /**
         *   This method calculates available cells
         *   For selected elephant
@@ -1584,7 +1782,7 @@ function Queen() {
 
     this._cssClass = "queen-";
 
-    this.getAvailableStaps = function(chessBoard) {
+    this.getAvailableSteps = function(chessBoard) {
         /**
         *   This method calculates available cells
         *   For selected queen
@@ -1863,8 +2061,20 @@ function King() {
     Figure.apply(this, arguments);
 
     this._cssClass = "king-";
+    this._isNotMoved = true;
 
-    this.getAvailableStaps = function(chessBoard) {
+
+    this.getIsNotMoved = function() {
+        /**
+        *   This method returns private property
+        *   @param {this} current figure
+        *   @return {boolean} _isNotMoved
+        */
+
+        return this._isNotMoved;
+    };
+
+    this.getAvailableSteps = function(chessBoard) {
         /**
         *   This method calculates available cells
         *   For selected king
@@ -1956,5 +2166,18 @@ function King() {
         });
 
         return eatingAims;
+    };
+
+    this.saveMove = function(gamer) {
+        /**
+        *   This method is extention for base method of figure
+        *   This is special method for King
+        *   @param {this} current king
+        *   @param {object} gamer
+        *   @return {nothing}
+        */
+
+        baseSaveMove.call(this);
+        this._isNotMoved = false;
     };
 };
