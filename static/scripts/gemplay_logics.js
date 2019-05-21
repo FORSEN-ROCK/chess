@@ -280,17 +280,75 @@ function game(event) {
 
             var isFigureRook = figure.getCssClass() == "rook-";
             var isNotKingMoved = selectedFigure.getIsNotMoved();
+            var isEmpty = false;
 
             if(isFigureRook) {
                 var isNotRookMoved = figure.getIsNotMoved();
             }
 
             if(isFigureRook && isNotRookMoved && isNotKingMoved) {
-                //var isSafePath = false;
-                //otherGamer.figures.map(function(figure) {
-                //    var steps = figure.getAvailableSteps(chessRows);
-                    
-                //});
+                var kingPosition = selectedFigure.getOldPosition();
+                var rookPosition = figure.getOldPosition();
+
+                var searchRow = kingPosition.row;
+                var start = 0;
+                var end = 0;
+                var countAll = 0; // dont like it
+                var countEmpty = 0;
+
+                var ofset = (
+                    (rookPosition.column - kingPosition.column) / 
+                    Math.abs(rookPosition.column - kingPosition.column)
+                );
+
+                if(ofset > 0) {
+                    start = rookPosition.column.column - ofset;
+                    end = kingPosition + ofset;
+                } else {
+                    start = kingPosition.column.column - ofset;
+                    end = rookPosition + ofset;
+                }
+
+                for(var cell = start; cell <= end; cell++) {
+                    countAll++; // think about it
+
+                    if(chessRows[searchRow][cell].getIsEmpty())
+                        countEmpty++;
+                }
+
+                if(countEmpty == countAll) 
+                    isEmpty = true;
+
+            }
+
+            if(isEmpty) {
+                var rookOfset = 2 * ofset;
+
+                if(rookOfset > 0)
+                    rookOfset = 3;
+
+                var isAttacking = otherGamer.checkCellForAttack(
+                                                        kingPosition,
+                                                        rookPosition,
+                                                        chessRows
+                );
+                var newKingCell = document.chessBoard.getCell(
+                                  kingPosition.getId() + 2 * ofset  
+                );
+                var newRookCell = document.chessBoard.getCell(
+                                  rookPosition.getId() + rookOfset
+                );
+
+                newKingPosition.getNewPosition().putFigure(selectedFigure);
+                newRookCell.getNewPosition().putFigure(figure);
+
+                selectedFigure.goTo(newKingCell);
+                figure.goTo(newRookCell);
+
+                document.chessBoard.deactivateBoard();
+                document.chessBoard.deactivateAim();
+
+                currentGamer.castlingIsDone();
             }
     }
 
@@ -402,6 +460,10 @@ function Gamer(color) {
         return this._isCastlingAvalaible;
     };
 
+    this.castlingIsDone = function() {
+        this._isCastlingAvalaible = false;
+    };
+
     this.getKing = function() {
         /**
         *   This method returns king of player
@@ -433,7 +495,7 @@ function Gamer(color) {
 
     this.getEscSteps = function(chessBoard, otherGamer) {
         /**
-        *   This method serches how can king be save
+        *   This method searchs how can king be save
         *   @param {this} current gamer
         *   @param {array of row} chessBoard
         *   @param {object} otherGamer
@@ -717,11 +779,46 @@ function Gamer(color) {
         return isMoveFinished;
     };
 
-    this.checkCellForAttack = function(start, end) {
+    this.checkCellForAttack = function(start, end, chessBoard) {
         /**
         *   This method checks can figures of current gamer
-        *   Go there
+        *   Can go there
+        *   @param {this} current gamer
+        *   @param {object} start
+        *   @param {object} end
+        *   @param {array of objects} chessBoard
+        *   @return {boolean} canGoThere
         */
+
+        var canGoThere = true;
+        var startId = start.getId();
+        var endId = end.getId();
+        var ofset = ((endId - starId) / Math.abs(endId - startId));
+        var start = 0;
+        var end = 0;
+
+        if(startId < endId) {
+            start = startId + ofset;
+            end = endId - ofset;
+        } else {
+            start = endId - ofset;
+            end = starId + ofset;
+        }
+
+        this.figures.map(function(figure) {
+            var steps = figure.getAvailableSteps(chessBoard);
+
+            steps.map(function(step) {
+                for(var stepOfset = start; stepOfset < end; stepOfset += ofset) {
+                    if(step.getId() == stepOfset) {
+                        canGoThere = false;
+                        break;
+                    }
+                }
+            });
+        });
+
+        return canGoThere;
     };
 }
 
