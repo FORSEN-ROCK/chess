@@ -22,7 +22,7 @@ function startGame() {
     var rows = transformCellToAreal();
     document.chessBoard = new ChessBoard(rows);
 
-    // Set mpde of game
+    // Set mode of game
     document.firstTouch = false;
 
     // Set the first gamer
@@ -270,24 +270,29 @@ function game(event) {
     }
 
     // Move with Castling
-    var isSelectedKing = selectedFigure.getCssClass() == "king-";
 
-    if(!isGameOver && isSelectedKing && !isKingScared &&
+    if(selectedFigure != undefined && !isGameOver && 
+       document.kingFigure != undefined && !isKingScared &&
+       target.attr("id") != document.kingFigure.getFigureId() &&
        target.hasClass("figure") && currentGamer.getIsCastlingAvalaible()) {
 
+            console.log("Enter in case with castling rock -> ");
+            var kingFigure = document.kingFigure;
             var figure = document.chessBoard.getFigure(target.attr("Id"));
             var otherGamer = choseNextGamer(currentGamer);
 
             var isFigureRook = figure.getCssClass() == "rook-";
-            var isNotKingMoved = selectedFigure.getIsNotMoved();
+            var isNotKingMoved = kingFigure.getIsNotMoved();
             var isEmpty = false;
+            var isAttacking = true;
 
             if(isFigureRook) {
                 var isNotRookMoved = figure.getIsNotMoved();
             }
 
+            console.log("Figure -> " + figure.getCssClass());
             if(isFigureRook && isNotRookMoved && isNotKingMoved) {
-                var kingPosition = selectedFigure.getOldPosition();
+                var kingPosition = kingFigure.getOldPosition();
                 var rookPosition = figure.getOldPosition();
 
                 var searchRow = kingPosition.row;
@@ -311,27 +316,28 @@ function game(event) {
 
                 for(var cell = start; cell <= end; cell++) {
                     countAll++; // think about it
+                    console.log("cell = " + cell);
 
                     if(chessRows[searchRow][cell].getIsEmpty())
                         countEmpty++;
                 }
 
-                if(countEmpty == countAll) 
+                if(countEmpty == countAll)
                     isEmpty = true;
 
+                isAttacking = otherGamer.checkCellForAttack(
+                                                        kingPosition,
+                                                        rookPosition,
+                                                        chessRows
+                );
             }
 
-            if(isEmpty) {
+            if(isEmpty && !isAttacking) {
                 var rookOfset = 2 * ofset;
 
                 if(rookOfset > 0)
                     rookOfset = 3;
 
-                var isAttacking = otherGamer.checkCellForAttack(
-                                                        kingPosition,
-                                                        rookPosition,
-                                                        chessRows
-                );
                 var newKingCell = document.chessBoard.getCell(
                                   kingPosition.getId() + 2 * ofset  
                 );
@@ -339,10 +345,10 @@ function game(event) {
                                   rookPosition.getId() + rookOfset
                 );
 
-                newKingPosition.getNewPosition().putFigure(selectedFigure);
+                newKingCell.getNewPosition().putFigure(kingFigure);
                 newRookCell.getNewPosition().putFigure(figure);
 
-                selectedFigure.goTo(newKingCell);
+                kingFigure.goTo(newKingCell);
                 figure.goTo(newRookCell);
 
                 document.chessBoard.deactivateBoard();
@@ -793,7 +799,7 @@ function Gamer(color) {
         var canGoThere = true;
         var startId = start.getId();
         var endId = end.getId();
-        var ofset = ((endId - starId) / Math.abs(endId - startId));
+        var ofset = (endId - startId) / Math.abs(endId - startId);
         var start = 0;
         var end = 0;
 
@@ -802,14 +808,18 @@ function Gamer(color) {
             end = endId - ofset;
         } else {
             start = endId - ofset;
-            end = starId + ofset;
+            end = startId + ofset;
+            ofset = 1;
         }
 
+        console.log("startId = " + startId + "; endId = " + endId);
         this.figures.map(function(figure) {
             var steps = figure.getAvailableSteps(chessBoard);
+            console.log("figure id = " + figure.getFigureId());
 
             steps.map(function(step) {
-                for(var stepOfset = start; stepOfset < end; stepOfset += ofset) {
+                console.log("start = " + start + "; end = " + end + "; ofset = " + ofset);
+                for(var stepOfset = start; stepOfset <= end; stepOfset += ofset) {
                     if(step.getId() == stepOfset) {
                         canGoThere = false;
                         break;
@@ -1193,6 +1203,12 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
                             document.selectedFigure = self;
                         }
 
+                        // If figure is the gamer king save it 
+                        // For castaling
+                        if(self.getCssClass() == "king-") {
+                            document.kingFigure = self;
+                        }
+
                         // Rule of first touch
                         if(document.selectedFigure == self) {
 
@@ -1207,18 +1223,8 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
                                                     document.currentGamer
                             );
 
-                            // Paint available cells for chosed figure
-                            /*availableSteps.forEach(function(cell) {
-                                cell.showAvailability();
-                            });*/
-
                             // Paint all eating aim for the figure
                             if(eatingAims.length > 0) {
-                                /*
-                                eatingAims.forEach(function(figure) {
-                                    figure.hideAim();
-                                });
-                                */
 
                                 eatingAims.forEach(function(cell) {
                                     cell.getFigure().showAsAim();
