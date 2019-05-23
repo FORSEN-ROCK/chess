@@ -270,13 +270,14 @@ function game(event) {
     }
 
     // Move with Castling
-
     if(selectedFigure != undefined && !isGameOver && 
        document.kingFigure != undefined && !isKingScared &&
        target.attr("id") != document.kingFigure.getFigureId() &&
+       target.attr("id") == selectedFigure.getFigureId() &&
        target.hasClass("figure") && currentGamer.getIsCastlingAvalaible()) {
 
-            console.log("Enter in case with castling rock -> ");
+            console.log("Castling");
+
             var kingFigure = document.kingFigure;
             var figure = document.chessBoard.getFigure(target.attr("Id"));
             var otherGamer = choseNextGamer(currentGamer);
@@ -290,7 +291,6 @@ function game(event) {
                 var isNotRookMoved = figure.getIsNotMoved();
             }
 
-            console.log("Figure -> " + figure.getCssClass());
             if(isFigureRook && isNotRookMoved && isNotKingMoved) {
                 var kingPosition = kingFigure.getOldPosition();
                 var rookPosition = figure.getOldPosition();
@@ -306,17 +306,16 @@ function game(event) {
                     Math.abs(rookPosition.column - kingPosition.column)
                 );
 
-                if(ofset > 0) {
-                    start = rookPosition.column.column - ofset;
-                    end = kingPosition + ofset;
+                if(ofset < 0) {
+                    start = rookPosition.column - ofset;
+                    end = kingPosition.column + ofset;
                 } else {
-                    start = kingPosition.column.column - ofset;
-                    end = rookPosition + ofset;
+                    start = kingPosition.column + ofset;
+                    end = rookPosition.column - ofset;
                 }
 
                 for(var cell = start; cell <= end; cell++) {
                     countAll++; // think about it
-                    console.log("cell = " + cell);
 
                     if(chessRows[searchRow][cell].getIsEmpty())
                         countEmpty++;
@@ -333,9 +332,9 @@ function game(event) {
             }
 
             if(isEmpty && !isAttacking) {
-                var rookOfset = 2 * ofset;
+                var rookOfset = -2 * ofset;
 
-                if(rookOfset > 0)
+                if(ofset < 0)
                     rookOfset = 3;
 
                 var newKingCell = document.chessBoard.getCell(
@@ -345,16 +344,23 @@ function game(event) {
                                   rookPosition.getId() + rookOfset
                 );
 
-                newKingCell.getNewPosition().putFigure(kingFigure);
-                newRookCell.getNewPosition().putFigure(figure);
+                var isKingMoved = kingFigure.move(newKingCell, [newKingCell]);
+                var isRookMoved = figure.move(newRookCell, [newRookCell]);
 
-                kingFigure.goTo(newKingCell);
-                figure.goTo(newRookCell);
+                if(isKingMoved && isRookMoved) {
+                    kingFigure.getNewPosition().putFigure(kingFigure);
+                    figure.getNewPosition().putFigure(figure);
 
-                document.chessBoard.deactivateBoard();
-                document.chessBoard.deactivateAim();
+                    kingFigure.goTo(newKingCell);
+                    figure.goTo(newRookCell);
 
-                currentGamer.castlingIsDone();
+                    document.chessBoard.deactivateBoard();
+                    document.chessBoard.deactivateAim();
+
+                    currentGamer.castlingIsDone();
+                }
+
+                document.kingFigure = undefined;
             }
     }
 
@@ -796,7 +802,7 @@ function Gamer(color) {
         *   @return {boolean} canGoThere
         */
 
-        var canGoThere = true;
+        var canGoThere = false;
         var startId = start.getId();
         var endId = end.getId();
         var ofset = (endId - startId) / Math.abs(endId - startId);
@@ -812,16 +818,13 @@ function Gamer(color) {
             ofset = 1;
         }
 
-        console.log("startId = " + startId + "; endId = " + endId);
         this.figures.map(function(figure) {
             var steps = figure.getAvailableSteps(chessBoard);
-            console.log("figure id = " + figure.getFigureId());
 
             steps.map(function(step) {
-                console.log("start = " + start + "; end = " + end + "; ofset = " + ofset);
                 for(var stepOfset = start; stepOfset <= end; stepOfset += ofset) {
                     if(step.getId() == stepOfset) {
-                        canGoThere = false;
+                        canGoThere = true;
                         break;
                     }
                 }
@@ -1168,7 +1171,6 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
         if(canBeMoved) {
             this._oldPosition.takeFigure();
             this._newPosition = newPosition;
-            //this._newPosition.putFigure(this);
             isMoved = true;
         }
 
@@ -1443,6 +1445,8 @@ function Pawn() {
 
 function Rook() {
     Figure.apply(this, arguments);
+
+    var baseSaveMove = this.saveMove;
 
     this._cssClass = "rook-";
     this._isNotMoved = true;
@@ -2162,6 +2166,8 @@ function Queen() {
 
 function King() {
     Figure.apply(this, arguments);
+
+    var baseSaveMove = this.saveMove;
 
     this._cssClass = "king-";
     this._isNotMoved = true;
