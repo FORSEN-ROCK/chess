@@ -1,5 +1,9 @@
 /**
 *   This script adds base game logics for html chess
+*
+*   Comment:
+*       In current version does not have situation with skip stroke
+*       And some solutions aren't good and they will be have to fix later 
 */
 
 (function(){
@@ -159,14 +163,10 @@ function game(event) {
     );
 
     if(isKingScared) {
-        console.log("The King is scared!");
-
         var saveFigures = currentGamer.getEscSteps(
                                 chessRows,
                                 choseNextGamer(currentGamer)
         );
-
-        console.log(saveFigures);
     }
 
     if(isKingScared && saveFigures.length == 0) {
@@ -276,7 +276,6 @@ function game(event) {
        target.attr("id") != document.kingFigure.getFigureId() &&
        target.hasClass("figure") && currentGamer.getIsCastlingAvalaible()) {
 
-            console.log("Enter in case with castling rock -> ");
             var kingFigure = document.kingFigure;
             var figure = document.chessBoard.getFigure(target.attr("Id"));
             var otherGamer = choseNextGamer(currentGamer);
@@ -290,7 +289,6 @@ function game(event) {
                 var isNotRookMoved = figure.getIsNotMoved();
             }
 
-            console.log("Figure -> " + figure.getCssClass());
             if(isFigureRook && isNotRookMoved && isNotKingMoved) {
                 var kingPosition = kingFigure.getOldPosition();
                 var rookPosition = figure.getOldPosition();
@@ -316,7 +314,6 @@ function game(event) {
 
                 for(var cell = start; cell <= end; cell++) {
                     countAll++; // think about it
-                    console.log("cell = " + cell);
 
                     if(chessRows[searchRow][cell].getIsEmpty())
                         countEmpty++;
@@ -716,7 +713,6 @@ function Gamer(color) {
         *   @return {boolean} isScared
         */
 
-        //console.log(this);
         var allConcurentFigureMoves = [];
         var movesToKing = [];
         var kingIsScared = false;
@@ -812,13 +808,10 @@ function Gamer(color) {
             ofset = 1;
         }
 
-        console.log("startId = " + startId + "; endId = " + endId);
         this.figures.map(function(figure) {
             var steps = figure.getAvailableSteps(chessBoard);
-            console.log("figure id = " + figure.getFigureId());
 
             steps.map(function(step) {
-                console.log("start = " + start + "; end = " + end + "; ofset = " + ofset);
                 for(var stepOfset = start; stepOfset <= end; stepOfset += ofset) {
                     if(step.getId() == stepOfset) {
                         canGoThere = false;
@@ -845,36 +838,87 @@ function Cell(row, column, absnumber) {
     this._figure = null;
 
     this.getId = function() {
+        /**
+        *   This method returns id of cell
+        *   @param {current cell} this
+        *   @return {number} _id
+        */
+
         return this._id;
     };
 
     this.getIsEmpty = function() {
+        /**
+        *   This method return flag isEmpty
+        *   @param {current cell} this
+        *   @return {boolean} _isEmpty
+        */
+
         return this._isEmpty;
     };
 
     this.putFigure = function(figure) {
+        /**
+        *   This method puts figure on current cell
+        *   And refreshes flag isEmpty
+        *   @param {current cell} this
+        *   @param {object} figure
+        *   @return {nothing}
+        */
+
         this._isEmpty = false;
         this._figure = figure;
     };
 
     this.takeFigure = function() {
+        /**
+        *   This method removes figure on current cell
+        *   And refrehes flag isEmpty
+        *   @param {current cell} this
+        *   @return {nothing}
+        */
+
         this._isEmpty = true;
         this._figure = null;
     };
 
     this.getFigure = function () {
+        /**
+        *   This method return figure from current cell
+        *   @param {current cell} this
+        *   @return {object} _figure
+        */
+
         return this._figure;
     };
 
     this.rowChess = function() {
+        /**
+        *   This method returns row number on board
+        *   @param {current cell} this
+        *   @return {number} row + 1
+        */
+
         return this.row + 1;
     };
 
     this.columnChess = function() {
+        /**
+        *   This method returns name of column on chess board
+        *   @param {currrent cell} this
+        *   @return {string} NAME_OF_COLUMN[this.column]
+        */
+
         return NAME_OF_COLUMN[this.column];
     };
 
     this.getIsChanged = function() {
+        /**
+        *   This method returns flag isChanged
+        *   @param {current cell} this
+        *   @return {boolean} _isChanged
+        */
+
         return this._isChanged;
     };
 
@@ -926,6 +970,12 @@ function ChessBoard(rows) {
     this._isChanged = false;
 
     this.getIsChanged = function() {
+        /**
+        *   This method returns flag isChanged
+        *   @param {current cell} this
+        *   @return {boolean} _isChanged
+        */
+
         return this._isChanged;
     };
 
@@ -935,6 +985,7 @@ function ChessBoard(rows) {
         *   @param {nothing}
             @return {nothing}
         */
+
         this._isChanged = false;
     };
 
@@ -1186,6 +1237,14 @@ function Figure(gamerId, startPosition, color, gamerDirection) {
     };
 
     this.show = function(parentCell) {
+        /**
+        *   This method shows figure in interface and adds
+        *   showing logic to figure
+        *   @param {current figure} this
+        *   @param {object} parentCell
+        *   @return {nothing}
+        */
+
         var self = this;
 
         $("<div/>", {
@@ -1825,6 +1884,9 @@ function Elephant() {
                    isNotFoundLeftToBottom) {
                         eatingAims.push(chessBoard[row][leftColumn]);
                         isNotFoundLeftToBottom = false;
+                } else if(!cell.getIsEmpty() &&
+                          cell.getFigure().getOwnerId() == gamer.gamerId) {
+                    isNotFoundLeftToBottom = false;
                 }
             }
 
@@ -1836,6 +1898,9 @@ function Elephant() {
                    isNotFoundRightToBottom) {
                         eatingAims.push(chessBoard[row][rightColumn]);
                         isNotFoundRightToBottom = false;
+                } else if(!cell.getIsEmpty() &&
+                          cell.getFigure().getOwnerId() == gamer.gamerId) {
+                    isNotFoundRightToBottom = false;
                 }
             }
 
@@ -1857,6 +1922,9 @@ function Elephant() {
                    isNotFoundLeftToTop) {
                         eatingAims.push(chessBoard[row][leftColumn]);
                         isNotFoundLeftToTop = false;
+                } else if(!cell.getIsEmpty() &&
+                          cell.getFigure().getOwnerId() == gamer.gamerId) {
+                    isNotFoundLeftToTop = false;
                 }
             }
 
@@ -1868,6 +1936,9 @@ function Elephant() {
                    isNotFoundRightToTop) {
                         eatingAims.push(chessBoard[row][rightColumn]);
                         isNotFoundRightToTop = false;
+                } else if (!cell.getIsEmpty() &&
+                           cell.getFigure().getOwnerId() == gamer.gamerId) {
+                    isNotFoundRightToTop = false;
                 }
             }
 
